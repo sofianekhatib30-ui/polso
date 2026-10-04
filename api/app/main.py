@@ -16,6 +16,7 @@ from typing import Annotated, Any
 from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
+from fastapi.responses import RedirectResponse
 
 from . import alerts, db
 from .incidents import CheckState, decide
@@ -57,6 +58,12 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
 
 def _default_name(url: str) -> str:
     return urlparse(url).hostname or url
+
+
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    # l'indirizzo principale porta alla documentazione interattiva
+    return RedirectResponse("/docs")
 
 
 @app.get("/health")

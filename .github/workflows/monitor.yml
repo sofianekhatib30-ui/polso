@@ -3,12 +3,15 @@
 #   ogni 15 minuti  controllo dei siti (stato, tempi, testo atteso, header, certificato)
 #   una volta al dì scadenza dei domini (RDAP o whois), poi segno di vita "controllo-domini"
 #   a mano          "prova-avvisi" manda un messaggio di prova su Slack/Telegram
+#
+# Chi lo fa partire: cron-job.org, con una chiamata a workflow_dispatch (vedi DEPLOY.md).
+# L'orario di GitHub (schedule) sui repository gratuiti è "quando può": il primo giorno è
+# partito 2 volte su più di 20. Resta solo quello giornaliero dei domini, come riserva.
 name: Monitor
 
 on:
   schedule:
-    - cron: "7,22,37,52 * * * *"   # minuti "storti": all'ora piena GitHub è affollato e ritarda
-    - cron: "41 4 * * *"           # domini: 06:41 a Roma d'estate, 05:41 d'inverno
+    - cron: "41 4 * * *"           # domini, riserva: 06:41 a Roma d'estate, 05:41 d'inverno
   workflow_dispatch:
     inputs:
       modo:

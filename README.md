@@ -11,7 +11,7 @@ Ogni 15 minuti controlla se i siti rispondono, se mostrano la pagina giusta, qua
 
 ```mermaid
 flowchart LR
-    GA["GitHub Actions<br/>ogni 15 minuti"] --> C["checker/check.sh<br/>Bash · curl · openssl"]
+    GA["GitHub Actions<br/>ogni 15 minuti<br/>(avviato da cron-job.org)"] --> C["checker/check.sh<br/>Bash · curl · openssl"]
     C -- "POST /checks<br/>con token" --> A["api/<br/>Python · FastAPI"]
     A -- "SQL scritto a mano" --> D[("PostgreSQL<br/>sites · checks · incidents · heartbeats")]
     W["web/<br/>Next.js · TypeScript"] -- "GET /sites, /incidents…" --> A
@@ -87,7 +87,7 @@ La CI su GitHub esegue tutto a ogni push, più `shellcheck`, `ruff` e la build d
 - **Un solo incidente aperto per sito, garantito dal database.** Un indice unico parziale (`WHERE resolved_at IS NULL`) impedisce i doppioni anche con due richieste in parallelo; il codice Python usa `ON CONFLICT DO NOTHING` e `FOR UPDATE`.
 - **Due controlli giù di fila per aprire un incidente.** Uno solo può essere un falso allarme di rete. La regola sta in una funzione pura (`api/app/incidents.py`), testata senza database.
 - **Bash per i controlli.** `curl` e `openssl` sono gli strumenti giusti per misurare un sito; lo script gira uguale su un server, in Docker e su GitHub Actions.
-- **I controlli girano su GitHub Actions**, non su un server sempre acceso: costo zero. Ogni 15 minuti, a minuti "storti" (7, 22, 37, 52) perché all'ora piena GitHub è affollato e ritarda; i domini una volta al giorno, perché cambiano di rado e i registri limitano le richieste.
+- **I controlli girano su GitHub Actions**, non su un server sempre acceso: costo zero. A farli partire ogni 15 minuti è cron-job.org con una chiamata all'API di GitHub, perché l'orario interno di GitHub sui repository gratuiti salta la maggior parte delle esecuzioni (il primo giorno: 2 su più di 20). I domini una volta al giorno, perché cambiano di rado e i registri limitano le richieste.
 - **I tempi si misurano dall'Europa.** I server di GitHub sono negli Stati Uniti, e da lì ogni misura verso un sito servito in Europa porta con sé l'Atlantico. Il checker chiede quindi all'API, che su Vercel gira a Francoforte, di misurare redirect, attesa e download (`api/app/probe.py`, solo libreria standard). Usa quei tempi solo se l'API ha ricevuto la stessa risposta, altrimenti tiene i propri. L'endpoint rifiuta gli indirizzi di reti private, anche dopo un redirect, e le mediane non mescolano misure prese da posti diversi.
 - **Niente verde dove non ci sono dati.** Un giorno senza controlli è "nessun controllo", non "online"; l'uptime complessivo è controlli riusciti su controlli fatti, mai una media di percentuali.
 - **Le pagine per i clienti sono separate.** Un gruppo di route Next.js (`app/(pubblico)`) ha un layout suo, senza menu né ricerca: il cliente vede solo quello che lo riguarda.

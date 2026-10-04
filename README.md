@@ -81,7 +81,9 @@ La CI su GitHub esegue tutto a ogni push, più `shellcheck`, `ruff` e la build d
 
 ## Come ho usato l'AI
 
-Polso nasce da un'esigenza reale del mio studio: tenere d'occhio i siti dei clienti. L'ho sviluppato insieme a Claude, usato come assistente di programmazione: architettura, codice e test sono nati in coppia. Checker, API e query SQL sono coperti da test automatici; la dashboard è controllata da TypeScript e lint.
+Polso nasce da un'esigenza reale del mio studio: tenere d'occhio i siti dei clienti. Ho deciso io cosa doveva fare, quali siti controllare e come doveva apparire (palette, stati, priorità delle informazioni), ho messo in piedi l'infrastruttura su GitHub, Neon e Vercel e ho guidato ogni modifica. Per scrivere codice e test ho lavorato con Claude come assistente di programmazione, come succede ormai in molti team.
+
+Checker, API e query SQL sono coperti da test automatici che girano a ogni modifica; la dashboard è controllata da TypeScript e lint.
 
 ## Documenti
 

@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Colori come variabili: il tema scuro cambia solo i valori, non i componenti. */
+:root {
+  color-scheme: light;
+  --bg: #f6f6f4;
+  --surface: #fcfcfb;
+  --surface-2: #f0efec;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #76756f;
+  --line: #e2e1dc;
+  --series: #2a78d6;
+  --series-soft: #cde2fb;
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --warn: #fab219;
+  --warn-ink: #7a5200;
+  --bad: #d03b3b;
+  --bad-ink: #a42323;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #9a998f;
+    --line: #33332f;
+    --series: #3987e5;
+    --series-soft: #184f95;
+    --good-ink: #5fd35f;
+    --warn-ink: #fab219;
+    --bad-ink: #f08a8a;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211;
+  --surface: #1a1a19;
+  --surface-2: #232321;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #9a998f;
+  --line: #33332f;
+  --series: #3987e5;
+  --series-soft: #184f95;
+  --good-ink: #5fd35f;
+  --warn-ink: #fab219;
+  --bad-ink: #f08a8a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-series: var(--series);
+  --color-good: var(--good);
+  --color-good-ink: var(--good-ink);
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-bad: var(--bad);
+  --color-bad-ink: var(--bad-ink);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

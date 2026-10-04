@@ -141,3 +141,27 @@ def test_schema_rieseguibile(clean_db):
 
     db.ensure_schema()
     db.ensure_schema()
+
+
+def test_sync_disattiva_i_siti_tolti_dalla_lista(client, auth):
+    altro = "https://studio.example.com"
+    client.post("/checks", json=[controllo(0, True), {**controllo(0, True), "url": altro}], headers=auth)
+    assert len(client.get("/sites").json()) == 2
+
+    # senza sync non cambia niente
+    client.post("/checks", json=[controllo(1, True)], headers=auth)
+    assert len(client.get("/sites").json()) == 2
+
+    # con sync la lista inviata è quella completa: il secondo sito sparisce
+    r = client.post("/checks", params={"sync": "true"}, json=[controllo(2, True)], headers=auth).json()
+    assert r["sites_deactivated"] == 1
+    assert [s["url"] for s in client.get("/sites").json()] == [URL]
+
+    # se torna nella lista, torna attivo
+    client.post(
+        "/checks",
+        params={"sync": "true"},
+        json=[controllo(3, True), {**controllo(3, True), "url": altro}],
+        headers=auth,
+    )
+    assert len(client.get("/sites").json()) == 2

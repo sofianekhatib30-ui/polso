@@ -47,3 +47,4 @@ class IngestResult(BaseModel):
     saved: int
     incidents_opened: int
     incidents_resolved: int
+    sites_deactivated: int = 0

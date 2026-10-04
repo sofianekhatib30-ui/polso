@@ -2,4 +2,4 @@
 # Copia questo file in sites.txt e modificalo: sites.txt non va su GitHub.
 https://kdigitalsolution.it  K Digital Solution
 https://naivy.it             Naivy
-https://moonzah.com          Moonzah
+https://naomifilippi.it      Naomi Filippi

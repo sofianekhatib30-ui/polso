@@ -147,11 +147,12 @@ check_site() {
     }'
 }
 
+# sync=true: la lista inviata è quella completa, i siti tolti da sites.txt spariscono dalla dashboard
 send_results() {
     local payload="$1" status
     [[ -n "$TOKEN" ]] || die "POLSO_INGEST_TOKEN non impostato (oppure usa --dry-run)"
     status="$(curl --silent --show-error --max-time 30 --output /dev/stderr --write-out '%{http_code}' \
-                   -X POST "$API_URL/checks" \
+                   -X POST "$API_URL/checks?sync=true" \
                    -H "Authorization: Bearer $TOKEN" \
                    -H "Content-Type: application/json" \
                    --data-binary "$payload")" || die "API non raggiungibile su $API_URL"

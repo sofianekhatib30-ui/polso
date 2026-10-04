@@ -37,7 +37,9 @@ Repository → Settings → Secrets and variables → Actions → New repository
 |---|---|
 | `POLSO_API_URL` | indirizzo dell'API |
 | `POLSO_INGEST_TOKEN` | lo stesso token dell'API |
-| `POLSO_SITES` | i siti, uno per riga, come in `checker/sites.example.txt` (facoltativo) |
+| `POLSO_SITES` | facoltativo: lista privata dei siti, uno per riga. Senza secret si usa `checker/sites.monitor.txt` |
+
+Il checker invia sempre la lista completa (`?sync=true`): un sito tolto dalla lista sparisce dalla dashboard, con lo storico conservato nel database.
 
 Poi Actions → **Monitor** → *Run workflow* per il primo controllo. Da lì gira da solo al minuto 7 di ogni ora.
 

@@ -12,6 +12,7 @@ SELECT
     round(extract(epoch FROM coalesce(i.resolved_at, now()) - i.started_at) / 60)::int AS duration_min
 FROM incidents i
 JOIN sites s ON s.id = i.site_id
-WHERE %(site_id)s::int IS NULL OR i.site_id = %(site_id)s::int
+-- senza filtro mostra solo i siti attivi; con il filtro anche quelli disattivati (pagina del sito)
+WHERE (%(site_id)s::int IS NULL AND s.active) OR i.site_id = %(site_id)s::int
 ORDER BY i.started_at DESC
 LIMIT %(limit)s;

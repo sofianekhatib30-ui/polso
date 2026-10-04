@@ -24,9 +24,11 @@ jobs:
         env:
           POLSO_SITES: ${{ secrets.POLSO_SITES }}
         run: |
-          # la lista vera sta nel secret POLSO_SITES (una riga per sito);
-          # senza secret si usano i siti di esempio
+          # 1) secret POLSO_SITES, se c'è (lista privata)
+          # 2) altrimenti checker/sites.monitor.txt (lista pubblica nel repository)
+          # 3) altrimenti i siti di esempio
           if [ -n "$POLSO_SITES" ]; then printf '%s\n' "$POLSO_SITES" > checker/sites.txt
+          elif [ -f checker/sites.monitor.txt ]; then cp checker/sites.monitor.txt checker/sites.txt
           else cp checker/sites.example.txt checker/sites.txt; fi
       - name: Controllo
         env:

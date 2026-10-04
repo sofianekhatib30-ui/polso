@@ -1,0 +1,15 @@
+# Siti controllati ogni ora da GitHub Actions (workflow monitor.yml).
+# Sono tutti siti pubblici del mio portfolio o di clienti che hanno dato l'ok.
+# Togliere una riga = il sito sparisce dalla dashboard (lo storico resta nel database).
+# Moonzah è in pausa: tornerà qui quando sarà riattivato.
+https://kdigitalsolution.it              K Digital Solution
+https://area.kdigitalsolution.it         Portale clienti K Digital Solution
+https://naivy.it                         Naivy
+https://naomifilippi.it                  Naomi Filippi
+https://project-q9m5e.vercel.app         General Fruit (anteprima)
+https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta)
+https://pharospeople.vercel.app          Pharos People
+https://startappo.vercel.app             Startappo
+https://attestiamo.vercel.app            Attestiamo
+https://soglia-preview.vercel.app        Soglia
+https://polso-one.vercel.app             Polso (dashboard)

@@ -79,7 +79,9 @@ def health(response: Response) -> dict[str, Any]:
 
 
 @app.post("/checks", dependencies=[Depends(require_token)])
-def ingest(checks: list[CheckIn]) -> IngestResult:
+def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
+    """Salva i controlli. Con `?sync=true` la lista inviata è quella completa:
+    i siti che non ci sono più vengono disattivati e spariscono dalla dashboard (lo storico resta)."""
     if not checks:
         raise HTTPException(422, "Nessun controllo da salvare")
     if len(checks) > 200:
@@ -134,11 +136,17 @@ def ingest(checks: list[CheckIn]) -> IngestResult:
                 resolved += 1
                 to_alert.append(f"🟢 {check.url} è tornato online")
 
+        deactivated = 0
+        if sync:
+            deactivated = len(db.fetch_all(conn, "deactivate_missing", {"urls": [c.url for c in checks]}))
+
     # Gli avvisi partono solo DOPO il commit: mai avvisare di qualcosa che non è stato salvato.
     for text in to_alert:
         alerts.send(text)
 
-    return IngestResult(saved=len(checks), incidents_opened=opened, incidents_resolved=resolved)
+    return IngestResult(
+        saved=len(checks), incidents_opened=opened, incidents_resolved=resolved, sites_deactivated=deactivated
+    )
 
 
 @app.get("/sites")

@@ -16,3 +16,7 @@ ignore = ["S101"]  # assert ammessi (test e controlli interni)
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# Vercel: dove si trova l'app FastAPI
+[tool.vercel]
+entrypoint = "app.main:app"

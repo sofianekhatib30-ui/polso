@@ -1,0 +1,35 @@
+# Il "cron" di Polso in produzione: ogni ora GitHub esegue il checker
+# e manda i risultati all'API pubblicata. Nessun server da tenere acceso.
+name: Monitor
+
+on:
+  schedule:
+    - cron: "7 * * * *"   # al minuto 7 di ogni ora (UTC), per evitare l'ora piena affollata
+  workflow_dispatch:      # avvio a mano dalla scheda Actions
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lista dei siti
+        env:
+          POLSO_SITES: ${{ secrets.POLSO_SITES }}
+        run: |
+          # la lista vera sta nel secret POLSO_SITES (una riga per sito);
+          # senza secret si usano i siti di esempio
+          if [ -n "$POLSO_SITES" ]; then printf '%s\n' "$POLSO_SITES" > checker/sites.txt
+          else cp checker/sites.example.txt checker/sites.txt; fi
+      - name: Controllo
+        env:
+          POLSO_API_URL: ${{ secrets.POLSO_API_URL }}
+          POLSO_INGEST_TOKEN: ${{ secrets.POLSO_INGEST_TOKEN }}
+        run: ./checker/check.sh

@@ -1,0 +1,55 @@
+# Avvio completo in locale:   cp .env.example .env   poi   docker compose up --build
+# Dashboard: http://localhost:3000   ·   API: http://localhost:8000/docs
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: polso
+      POSTGRES_USER: polso
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD nel file .env}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      # al primo avvio Postgres esegue in ordine i file di questa cartella: schema, poi dati di esempio
+      - ./db/migrations/001_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U polso -d polso"]
+      interval: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql://polso:${POSTGRES_PASSWORD}@db:5432/polso
+      POLSO_INGEST_TOKEN: ${POLSO_INGEST_TOKEN:?imposta POLSO_INGEST_TOKEN nel file .env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    environment:
+      POLSO_API_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  checker:
+    build: ./checker
+    environment:
+      POLSO_API_URL: http://api:8000
+      POLSO_INGEST_TOKEN: ${POLSO_INGEST_TOKEN}
+    volumes:
+      # usa sites.txt se c'è, altrimenti copia prima sites.example.txt in sites.txt
+      - ./checker/sites.txt:/config/sites.txt:ro
+    depends_on:
+      - api
+
+volumes:
+  dbdata:

@@ -27,6 +27,30 @@ const PARTS = [
   },
 ] as const;
 
+// Regioni di Vercel da cui l'API può misurare (api/app/probe.py), con il nome della città.
+const REGIONI: Record<string, string> = {
+  fra1: "Francoforte",
+  dub1: "Dublino",
+  cdg1: "Parigi",
+  lhr1: "Londra",
+  arn1: "Stoccolma",
+  iad1: "Washington",
+};
+
+function provenienza(origin: string | null): string {
+  if (!origin) {
+    return (
+      "I controlli partono dai server di GitHub negli Stati Uniti: i tempi assoluti sono più alti di quelli che vede " +
+      "un utente in Italia, i confronti tra siti restano validi."
+    );
+  }
+  const citta = REGIONI[origin];
+  if (origin === "fra1") {
+    return "Misurati da Francoforte: tempi vicini a quelli di chi apre il sito dall'Italia.";
+  }
+  return citta ? `Misurati da ${citta}.` : `Misurati dal server dell'API (${origin}).`;
+}
+
 function kb(bytes: number | null): string {
   if (bytes === null) return "—";
   if (bytes < 1024) return `${bytes} byte`;
@@ -115,8 +139,8 @@ export function TimingBreakdown({ timing }: { timing: Timing }) {
       )}
 
       <p className="mt-4 text-xs text-muted">
-        Mediana di {timing.samples} controlli nelle ultime 24 ore. I controlli partono dai server di GitHub negli Stati
-        Uniti: i tempi assoluti sono più alti di quelli che vede un utente in Italia, i confronti tra siti restano validi.
+        Mediana di {timing.samples} {timing.samples === 1 ? "controllo" : "controlli"} nelle ultime 24 ore.{" "}
+        {provenienza(timing.origin ?? null)}
       </p>
     </div>
   );

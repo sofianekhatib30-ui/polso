@@ -100,6 +100,27 @@ assert_eq "nessun redirect"                   "0"                 "$(jq '.[0].ti
 assert_eq "sito giù: niente tempi"            "null"              "$(jq '.[2].timing' <<<"$OUT")"
 assert_eq "un redirect seguito (/sicuro -> /sicuro/)" "1"        "$(jq '.[7].timing.redirects' <<<"$OUT")"
 
+assert_eq "senza misura dall'API: nessuna origine" "null"          "$(jq '.[0].timing.origin' <<<"$OUT")"
+
+echo "Checker: tempi misurati dall'API"
+# Risposte dell'API già pronte: il primo sito con lo stesso codice (i tempi si prendono), il secondo
+# con un codice diverso da quello visto qui (i tempi restano quelli locali).
+cat > "$WORK/probe.json" <<EOF
+{"origin": "fra1", "results": [
+  {"url": "http://127.0.0.1:$PORT/", "status_code": 200, "total_ms": 123, "redirect_ms": 0, "wait_ms": 100,
+   "download_ms": 23, "size_bytes": 4321, "redirects": 0, "final_url": "http://127.0.0.1:$PORT/", "error": null},
+  {"url": "http://127.0.0.1:$PORT/sicuro", "status_code": 403, "total_ms": 999, "redirect_ms": 1, "wait_ms": 2,
+   "download_ms": 3, "size_bytes": 4, "redirects": 0, "final_url": null, "error": null}
+]}
+EOF
+printf 'http://127.0.0.1:%s/  Uno\nhttp://127.0.0.1:%s/sicuro  Due\n' "$PORT" "$PORT" > "$WORK/probe-siti.txt"
+PR="$(POLSO_TIMEOUT=5 POLSO_PROBE_RESULTS="$WORK/probe.json" "$SCRIPT_DIR/check.sh" --sites "$WORK/probe-siti.txt" --dry-run 2>/dev/null)"
+assert_eq "stesso codice: tempo dall'API"     "123"               "$(jq '.[0].response_ms' <<<"$PR")"
+assert_eq "stesso codice: parti dall'API"     "0 100 23 4321"     "$(jq -r '.[0].timing | "\(.redirect_ms) \(.wait_ms) \(.download_ms) \(.size_bytes)"' <<<"$PR")"
+assert_eq "origine dichiarata"                "fra1"              "$(jq -r '.[0].timing.origin' <<<"$PR")"
+assert_eq "codice diverso: tempi di qui"      "null"              "$(jq '.[1].timing.origin' <<<"$PR")"
+assert_eq "codice diverso: un redirect visto qui" "1"             "$(jq '.[1].timing.redirects' <<<"$PR")"
+
 echo "Checker: domini"
 mkdir -p "$WORK/rdap/domain"
 cat > "$WORK/rdap/domain/esempio.it" <<'JSON'

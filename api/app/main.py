@@ -1,6 +1,6 @@
 """API di Polso.
 
-Scrittura (protetta da token):  POST /checks, /domains, /heartbeats, /ping/{slug}, /alerts/test
+Scrittura (protetta da token):  POST /checks, /domains, /heartbeats, /ping/{slug}, /alerts/test, /probe
 Lettura (pubblica):             GET /sites, /sites/{id}, /sites/{id}/series, /sites/{id}/transitions,
                                 /incidents, /uptime/daily, /clients, /heartbeats, /report,
                                 /badge/{id}.svg, /ssl/expiring, /health
@@ -21,9 +21,9 @@ from zoneinfo import ZoneInfo
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import RedirectResponse
 
-from . import alerts, db, expiry
+from . import alerts, db, expiry, probe
 from .incidents import CheckState, decide
-from .models import CheckIn, DomainIn, HeartbeatIn, IngestResult, slugify
+from .models import CheckIn, DomainIn, HeartbeatIn, IngestResult, ProbeIn, slugify
 from .settings import settings
 
 log = logging.getLogger("polso")
@@ -64,7 +64,7 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
     _check_token(given)
 
 
-_TIMING_FIELDS = ("redirect_ms", "wait_ms", "download_ms", "size_bytes", "redirects")
+_TIMING_FIELDS = ("redirect_ms", "wait_ms", "download_ms", "size_bytes", "redirects", "origin")
 
 
 def _default_name(url: str) -> str:
@@ -263,6 +263,15 @@ def ssl_expiring(days: Annotated[int, Query(ge=1, le=365)] = 30) -> list[dict[st
 
 
 # --- Avvisi ------------------------------------------------------------------------------------
+
+
+@app.post("/probe", dependencies=[Depends(require_token)])
+def probe_sites(body: ProbeIn) -> dict[str, Any]:
+    """Misura i siti da qui, cioè da Francoforte quando l'API è su Vercel (vedi `probe.py`).
+    Il checker la chiama una volta per giro e usa questi tempi al posto di quelli presi dagli Stati Uniti.
+    Uno dopo l'altro e non in parallelo: le misure non si contendono la rete della funzione."""
+    results = [probe.measure(url, body.timeout).as_dict() for url in body.urls]
+    return {"origin": probe.origin(), "results": results}
 
 
 @app.post("/alerts/test", dependencies=[Depends(require_token)])

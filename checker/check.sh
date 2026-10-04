@@ -8,6 +8,9 @@
 #   - se nella pagina c'è il testo atteso (facoltativo, "cerca=")
 #   - quali header di sicurezza manda (HSTS, CSP, ...)
 #   - quando scade il certificato SSL (openssl)
+# I tempi li prende dall'API, che li misura da Francoforte (vedi api/app/probe.py): GitHub è negli
+# Stati Uniti e i suoi tempi verso un sito servito in Europa contengono l'Atlantico. Se la misura
+# europea non riesce, restano quelli presi qui.
 # Con --domains invece legge la scadenza dei domini (RDAP, oppure whois se c'è).
 #
 # Uso:  ./check.sh [--sites FILE] [--domains] [--heartbeats FILE] [--ping SLUG] [--dry-run] [--every SECONDI]
@@ -24,6 +27,8 @@ TOKEN="${POLSO_INGEST_TOKEN:-}"
 TOKEN="${TOKEN//[$'\t\r\n ']/}"   # toglie spazi e a capo copiati per sbaglio con il token
 TIMEOUT="${POLSO_TIMEOUT:-15}"
 RDAP_URL="${POLSO_RDAP_URL:-https://rdap.org}"
+PROBE="${POLSO_PROBE:-1}"                  # 0 = tempi solo da qui, senza chiedere all'API
+PROBE_FILE="${POLSO_PROBE_RESULTS:-}"     # risposte dell'API già pronte (per i test); vuoto = si chiede all'API
 DRY_RUN=false
 EVERY=0
 MODE=checks          # checks = controlla i siti, domains = scadenza dei domini
@@ -51,6 +56,7 @@ Variabili d'ambiente:
   POLSO_API_URL       indirizzo dell'API (predefinito http://localhost:8000)
   POLSO_INGEST_TOKEN  token per scrivere sull'API (obbligatorio senza --dry-run)
   POLSO_TIMEOUT       secondi massimi per sito (predefinito 15)
+  POLSO_PROBE         1 (predefinito) = tempi misurati dall'API a Francoforte; 0 = solo da qui
 
 Esempio di sites.txt (dopo l'URL: nome, poi opzioni separate da |):
   # le righe con # sono commenti
@@ -214,12 +220,50 @@ ssl_expiry() {
     fi
 }
 
+# Chiede all'API di misurare i tempi di tutti i siti da dove gira lei (Francoforte su Vercel).
+# Una sola chiamata per giro. Scrive la risposta in PROBE_FILE; se qualcosa va storto lo dice e
+# lascia PROBE_FILE vuoto: il giro continua con i tempi presi qui.
+probe_sites() {
+    [[ -n "$PROBE_FILE" ]] && return 0            # risposte già pronte (test)
+    [[ "$PROBE" == 1 && "$DRY_RUN" == false && -n "$TOKEN" ]] || return 0
+    local urls payload out
+    urls="$(read_sites | cut -d "$FS" -f 1 | jq -R . | jq -sc .)"
+    payload="$(jq -nc --argjson urls "$urls" --argjson t "$TIMEOUT" '{urls: $urls, timeout: $t}')"
+    out="$(mktemp)"
+    if curl --silent --fail --max-time 300 --output "$out" -X POST "$API_URL/probe" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            --data-binary "$payload" && jq -e '.results | length > 0' "$out" >/dev/null 2>&1; then
+        PROBE_FILE="$out"
+        log "tempi misurati dall'API ($(jq -r .origin "$out"))"
+    else
+        rm -f "$out"
+        log "misura dall'API non riuscita: tempi presi da qui"
+    fi
+}
+
+# Tempi misurati dall'API per un indirizzo, separati da \x1f (come i campi dei siti: un TAB farebbe
+# sparire i campi vuoti): codice totale redirect attesa download byte redirect origine.
+probe_result() {
+    [[ -n "$PROBE_FILE" && -s "$PROBE_FILE" ]] || return 0
+    jq -r --arg u "$1" '.origin as $o | first(.results[] | select(.url == $u))
+        | [.status_code, .total_ms, .redirect_ms, .wait_ms, .download_ms, .size_bytes, .redirects, $o]
+        | map(if . == null then "" else tostring end) | join("\u001f")' "$PROBE_FILE" 2>/dev/null || true
+}
+
 # Un controllo completo di un sito, in JSON.
 check_site() {
     local url="$1" name="$2" client="$3" keyword="$4" logo="${5:-}" code ms final redir_ms wait_ms down_ms size nredir error
-    local expires headers body sec='[]' icon="" is_up=false
+    local expires headers body sec='[]' icon="" is_up=false origin=""
+    local p_code p_ms p_redir p_wait p_down p_size p_nred p_origin
     headers="$(mktemp)"; body="$(mktemp)"
     read -r code ms final redir_ms wait_ms down_ms size nredir error <<<"$(check_http "$url" "$headers" "$body")"
+    # tempi dall'API, ma solo se ha visto la stessa risposta (stesso codice): altrimenti le due misure
+    # descrivono due cose diverse (es. un sito che blocca i server di Vercel) e restano quelli di qui
+    IFS="$FS" read -r p_code p_ms p_redir p_wait p_down p_size p_nred p_origin <<<"$(probe_result "$url")"
+    if [[ -n "$p_ms" && "$p_code" == "$code" ]]; then
+        ms="$p_ms"; redir_ms="$p_redir"; wait_ms="$p_wait"; down_ms="$p_down"
+        size="$p_size"; nredir="$p_nred"; origin="$p_origin"
+    fi
     expires="$(ssl_expiry "$url")"
     # su = ha risposto con un codice tra 200 e 399
     if [[ "$code" =~ ^[0-9]+$ ]] && (( code >= 200 && code < 400 )); then
@@ -246,7 +290,7 @@ check_site() {
           --arg exp "$expires" --arg err "$error" \
           --arg client "$client" --arg kw "$keyword" --argjson sec "$sec" \
           --arg final "$final" --arg icon "$icon" \
-          --arg rms "$redir_ms" --arg wms "$wait_ms" --arg dms "$down_ms" --arg size "$size" --arg nred "$nredir" '{
+          --arg rms "$redir_ms" --arg wms "$wait_ms" --arg dms "$down_ms" --arg size "$size" --arg nred "$nredir" --arg orig "$origin" '{
         url: $url,
         name: (if $name == "" then null else $name end),
         checked_at: $at,
@@ -262,7 +306,8 @@ check_site() {
         icon_href: (if $icon == "" then null else $icon end),
         timing: (if $up then {
             redirect_ms: ($rms | tonumber), wait_ms: ($wms | tonumber), download_ms: ($dms | tonumber),
-            size_bytes: ($size | tonumber), redirects: ($nred | tonumber)
+            size_bytes: ($size | tonumber), redirects: ($nred | tonumber),
+            origin: (if $orig == "" then null else $orig end)
         } else null end)
     }'
 }
@@ -421,13 +466,15 @@ post_json() {
 
 run_checks() {
     local url name client keyword logo results=() line
+    probe_sites
     while IFS="$FS" read -r url name client keyword logo; do
         log "controllo $url"
         line="$(check_site "$url" "$name" "$client" "$keyword" "$logo")"
         results+=("$line")
-        log "  -> $(jq -r 'if .is_up then "su, \(.status_code), \(.response_ms) ms" else "GIÙ: \(.error)" end' <<<"$line")"
+        log "  -> $(jq -r 'if .is_up then "su, \(.status_code), \(.response_ms) ms\(if .timing.origin then " (da \(.timing.origin))" else "" end)" else "GIÙ: \(.error)" end' <<<"$line")"
     done < <(read_sites)
 
+    [[ -z "${POLSO_PROBE_RESULTS:-}" && -n "$PROBE_FILE" ]] && rm -f "$PROBE_FILE"
     (( ${#results[@]} > 0 )) || die "nessun sito da controllare in $SITES_FILE"
 
     local payload

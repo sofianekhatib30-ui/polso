@@ -255,3 +255,20 @@ def test_tempi_scomposti(client, auth):
     client.post("/checks", json=[controllo(url, minuti_fa=1)], headers=auth)
     assert client.get("/sites/1/timing").json()["samples"] == 2
     assert client.post("/checks", json=[controllo(url, timing={**t, "wait_ms": -1})], headers=auth).status_code == 422
+
+
+def test_tempi_da_francoforte_non_si_mescolano(client, auth):
+    url = "https://lontano.example.com"
+    usa = {"redirect_ms": 500, "wait_ms": 600, "download_ms": 100, "size_bytes": 10_000, "redirects": 1}
+    for minuti in (30, 25, 20):
+        client.post("/checks", json=[controllo(url, minuti_fa=minuti, timing=usa)], headers=auth)
+    r = client.get("/sites/1/timing").json()
+    assert (r["samples"], r["origin"], r["wait_ms"]) == (3, None, 600)
+    # dal primo controllo misurato a Francoforte la mediana riparte da lì, senza i tempi americani
+    eu = {**usa, "redirect_ms": 40, "wait_ms": 90, "origin": "fra1"}
+    client.post("/checks", json=[controllo(url, minuti_fa=5, timing=eu)], headers=auth)
+    r = client.get("/sites/1/timing").json()
+    assert (r["samples"], r["origin"], r["wait_ms"], r["redirect_ms"]) == (1, "fra1", 90, 40)
+    assert "timing_origin" not in r["last"]
+    bad = {**eu, "origin": "FRA 1"}
+    assert client.post("/checks", json=[controllo(url, timing=bad)], headers=auth).status_code == 422

@@ -82,7 +82,9 @@ BEGIN
             ('checks', 'wait_ms',     'INTEGER'),
             ('checks', 'download_ms', 'INTEGER'),
             ('checks', 'size_bytes',  'INTEGER'),
-            ('checks', 'redirects',   'INTEGER')
+            ('checks', 'redirects',   'INTEGER'),
+            -- da dove sono presi i tempi: regione di Vercel (es. fra1) o NULL = dal checker su GitHub (USA)
+            ('checks', 'timing_origin', 'TEXT')
         ) AS v(tab, col, typ)
     LOOP
         IF NOT EXISTS (

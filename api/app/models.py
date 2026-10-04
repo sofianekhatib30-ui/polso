@@ -43,6 +43,8 @@ class Timing(BaseModel):
     download_ms: int = Field(ge=0, le=600_000)
     size_bytes: int = Field(ge=0, le=100_000_000)
     redirects: int = Field(ge=0, le=50)
+    # da dove sono presi i tempi: la regione di Vercel (es. "fra1") quando misura l'API, assente se dal checker
+    origin: str | None = Field(default=None, max_length=16, pattern=r"^[a-z0-9-]+$")
 
 
 class CheckIn(BaseModel):
@@ -138,3 +140,18 @@ class HeartbeatIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     period_min: int = Field(ge=1, le=60 * 24 * 31)
     grace_min: int = Field(default=0, ge=0, le=60 * 24 * 7)
+
+
+class ProbeIn(BaseModel):
+    """Richiesta di misura da Francoforte: gli indirizzi da misurare, uno dopo l'altro."""
+
+    urls: list[str] = Field(min_length=1, max_length=50)
+    timeout: float = Field(default=15.0, gt=0, le=30)
+
+    @field_validator("urls")
+    @classmethod
+    def _http_only(cls, urls: list[str]) -> list[str]:
+        for url in urls:
+            if not url.startswith(("http://", "https://")) or len(url) > 2000:
+                raise ValueError(f"indirizzo non valido: {url[:100]}")
+        return urls

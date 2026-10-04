@@ -89,6 +89,8 @@ export type Timing = {
   download_ms: number | null;
   size_bytes: number | null;
   redirects: number | null;
+  /** da dove sono presi i tempi: regione di Vercel (es. "fra1"); null = dal checker su GitHub (USA) */
+  origin: string | null;
   last: Record<string, number | string> | null;
 };
 

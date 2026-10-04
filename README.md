@@ -3,6 +3,8 @@
 Monitor dei siti web per uno studio che gestisce i siti dei propri clienti.
 Ogni ora controlla se i siti rispondono, quanto sono veloci e quando scade il certificato SSL; apre un incidente quando un sito è giù e lo chiude quando torna online.
 
+**Demo:** dashboard [polso-one.vercel.app](https://polso-one.vercel.app) · API [polso-api.vercel.app/docs](https://polso-api.vercel.app/docs)
+
 ![Dashboard di Polso](docs/dashboard.png)
 
 ## Come funziona

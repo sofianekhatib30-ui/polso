@@ -217,7 +217,7 @@ def test_icona_del_sito(client, auth):
 
 
 def test_icona_strana_non_blocca_i_controlli(client, auth):
-    lunga = "data:image/svg+xml;base64," + "A" * 5000
+    lunga = "data:image/svg+xml;base64," + "A" * 150_000
     r = client.post(
         "/checks",
         json=[
@@ -228,3 +228,12 @@ def test_icona_strana_non_blocca_i_controlli(client, auth):
     )
     assert r.status_code == 200 and r.json()["saved"] == 2
     assert client.get("/sites").json()[0]["icon_url"] == "https://a.example.com/favicon.ico"
+
+
+def test_icona_incorporata(client, auth):
+    svg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E"
+    client.post("/checks", json=[controllo("https://c.example.com", icon_href=svg)], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"] == svg
+    html = "data:text/html,<script>alert(1)</script>"
+    client.post("/checks", json=[controllo("https://c.example.com", minuti_fa=1, icon_href=html)], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"] == "https://c.example.com/favicon.ico"

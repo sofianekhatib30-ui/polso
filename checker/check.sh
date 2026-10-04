@@ -103,16 +103,16 @@ trim() {
 # Non un TAB: bash considera il TAB uno spazio e unirebbe due TAB di fila, perdendo i campi vuoti.
 readonly FS=$'\x1f'
 
-# Legge sites.txt: salta righe vuote e commenti, stampa "URL␟nome␟cliente␟testo da cercare".
-# Formato di una riga:  URL  nome del sito | cliente=Nome cliente | cerca=testo
+# Legge sites.txt: salta righe vuote e commenti, stampa "URL␟nome␟cliente␟testo da cercare␟logo".
+# Formato di una riga:  URL  nome del sito | cliente=Nome cliente | cerca=testo | logo=https://...
 read_sites() {
     [[ -r "$SITES_FILE" ]] || die "file dei siti non trovato: $SITES_FILE (copia sites.example.txt in sites.txt)"
-    local url rest name client keyword part key value
+    local url rest name client keyword logo part key value
     local -a parts
     while read -r url rest || [[ -n "$url" ]]; do
         [[ -z "$url" || "$url" == \#* ]] && continue
         [[ "$url" =~ ^https?:// ]] || { log "riga ignorata, non è un URL http(s): $url"; continue; }
-        client="" keyword=""
+        client="" keyword="" logo=""
         IFS='|' read -r -a parts <<<"$rest"
         name="$(trim "${parts[0]:-}")"
         for part in "${parts[@]:1}"; do
@@ -121,10 +121,11 @@ read_sites() {
             case "$key" in
                 cliente) client="$value" ;;
                 cerca)   keyword="$value" ;;
+                logo)    logo="$value" ;;
                 *)       log "opzione sconosciuta ignorata per $url: $key" ;;
             esac
         done
-        printf '%s\n' "$url$FS$name$FS$client$FS$keyword"
+        printf '%s\n' "$url$FS$name$FS$client$FS$keyword$FS$logo"
     done < "$SITES_FILE"
 }
 
@@ -161,8 +162,12 @@ icon_href() {
     href="$(sed -nE "s/.*[[:space:]]href=[\"']?([^\"' >]+).*/\1/Ip" <<<"$line" | head -n 1)"
     # \& perché da bash 5.2 una & nella sostituzione vuol dire "il testo trovato"
     href="${href//&amp;/\&}"
-    # le icone incorporate (data:...) o lunghissime non servono: meglio nessuna
-    [[ "$href" == data:* || ${#href} -gt 1000 ]] && return 0
+    # molte pagine incorporano l'icona (data:image/...): va bene, ma non oltre 100 KB
+    if [[ "$href" == data:* ]]; then
+        [[ "$href" == data:image/* && ${#href} -le 100000 ]] || return 0
+    elif (( ${#href} > 1000 )); then
+        return 0
+    fi
     printf '%s' "$href"
 }
 
@@ -201,7 +206,7 @@ ssl_expiry() {
 
 # Un controllo completo di un sito, in JSON.
 check_site() {
-    local url="$1" name="$2" client="$3" keyword="$4" code ms final error expires headers body sec='[]' icon="" is_up=false
+    local url="$1" name="$2" client="$3" keyword="$4" logo="${5:-}" code ms final error expires headers body sec='[]' icon="" is_up=false
     headers="$(mktemp)"; body="$(mktemp)"
     read -r code ms final error <<<"$(check_http "$url" "$headers" "$body")"
     expires="$(ssl_expiry "$url")"
@@ -209,7 +214,8 @@ check_site() {
     if [[ "$code" =~ ^[0-9]+$ ]] && (( code >= 200 && code < 400 )); then
         is_up=true
         sec="$(security_headers "$headers")"
-        icon="$(icon_href "$body")"
+        # logo= nel file dei siti vince sull'icona della pagina (per i siti che non ne hanno una)
+        icon="${logo:-$(icon_href "$body")}"
         # risponde, ma la pagina è quella giusta? (un 200 può essere anche una pagina di errore)
         if [[ -n "$keyword" ]] && ! grep -qiF -- "$keyword" "$body"; then
             is_up=false
@@ -293,7 +299,7 @@ domain_whois() {
 check_domains() {
     local url name client keyword domain info expires registrar results=() iso dated=0
     local -A seen=()
-    while IFS="$FS" read -r url name client keyword; do
+    while IFS="$FS" read -r url name client keyword _; do
         domain="$(registrable_domain "$url")"
         if [[ -z "$domain" ]]; then
             log "dominio di $url: gestito dalla piattaforma, salto"
@@ -398,10 +404,10 @@ post_json() {
 }
 
 run_checks() {
-    local url name client keyword results=() line
-    while IFS="$FS" read -r url name client keyword; do
+    local url name client keyword logo results=() line
+    while IFS="$FS" read -r url name client keyword logo; do
         log "controllo $url"
-        line="$(check_site "$url" "$name" "$client" "$keyword")"
+        line="$(check_site "$url" "$name" "$client" "$keyword" "$logo")"
         results+=("$line")
         log "  -> $(jq -r 'if .is_up then "su, \(.status_code), \(.response_ms) ms" else "GIÙ: \(.error)" end' <<<"$line")"
     done < <(read_sites)

@@ -64,7 +64,13 @@ class CheckIn(BaseModel):
     def extra_facoltativi(cls, value: str | None) -> str | None:
         # sono dettagli: un valore strano (un'icona data: lunghissima, un indirizzo enorme)
         # si scarta, non deve far rifiutare il controllo di tutti i siti
-        if not value or len(value) > 1000 or value.lower().startswith(("data:", "javascript:")):
+        if not value:
+            return None
+        low = value.lower()
+        # icone incorporate nella pagina: solo immagini e non oltre 100 KB
+        if low.startswith("data:"):
+            return value if low.startswith("data:image/") and len(value) <= 100_000 else None
+        if len(value) > 1000 or low.startswith("javascript:"):
             return None
         return value
 

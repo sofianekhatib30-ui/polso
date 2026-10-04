@@ -63,7 +63,7 @@ http://127.0.0.1:1/  Porta chiusa
 non-e-un-url
 http://127.0.0.1:$PORT/  Con testo giusto | cliente=Fondazione L'Ancora | cerca=BENVENUTI
 http://127.0.0.1:$PORT/  Con testo sbagliato | cerca=prezzi
-http://127.0.0.1:$PORT/sicuro/  Sicuro | opzione=strana
+http://127.0.0.1:$PORT/sicuro/  Sicuro | opzione=strana | logo=https://esempio.it/logo.svg
 EOF
 
 echo "Checker: controlli su server locale"
@@ -88,7 +88,7 @@ assert_eq "nessun header di sicurezza"        "[]"                "$(jq -c '.[0]
 assert_eq "header di sicurezza riconosciuti"  '["hsts","csp","nosniff","frame"]' "$(jq -c '.[5].security_headers' <<<"$OUT")"
 assert_eq "porta chiusa: header sconosciuti"  "null"              "$(jq '.[2].security_headers' <<<"$OUT")"
 assert_eq "icona letta dalla pagina"          "/icona.png?v=1&x=2" "$(jq -r '.[0].icon_href' <<<"$OUT")"
-assert_eq "pagina senza icona"                "null"              "$(jq '.[5].icon_href' <<<"$OUT")"
+assert_eq "logo= vince sull'icona della pagina" "https://esempio.it/logo.svg" "$(jq -r '.[5].icon_href' <<<"$OUT")"
 assert_eq "indirizzo finale dopo i redirect"  "http://127.0.0.1:$PORT/" "$(jq -r '.[0].final_url' <<<"$OUT")"
 
 echo "Checker: domini"

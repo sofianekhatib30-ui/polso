@@ -69,10 +69,12 @@ def _default_name(url: str) -> str:
 
 
 def _icon_url(check: CheckIn) -> str | None:
-    """Indirizzo assoluto dell'icona del sito. Solo se il sito ha risposto; senza icona dichiarata
-    si prova /favicon.ico. Solo http(s): niente data: o javascript: in una <img>."""
+    """Icona del sito: indirizzo assoluto, oppure l'immagine incorporata (data:image/...) così com'è.
+    Solo se il sito ha risposto; senza icona dichiarata si prova /favicon.ico. Mai javascript:."""
     if not check.is_up:
         return None
+    if check.icon_href and check.icon_href.lower().startswith("data:image/"):
+        return check.icon_href  # icona incorporata: già pronta per <img src>
     base = check.final_url if check.final_url and check.final_url.startswith(("http://", "https://")) else check.url
     icon = urljoin(base + ("" if urlparse(base).path else "/"), check.icon_href or "/favicon.ico")
     return icon if urlparse(icon).scheme in ("http", "https") and len(icon) <= 1000 else None

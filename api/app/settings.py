@@ -20,8 +20,9 @@ class Settings:
 
 def load() -> Settings:
     return Settings(
-        database_url=os.environ.get("DATABASE_URL", "postgresql://postgres@localhost:5432/polso"),
-        ingest_token=os.environ.get("POLSO_INGEST_TOKEN", ""),
+        database_url=os.environ.get("DATABASE_URL", "postgresql://postgres@localhost:5432/polso").strip(),
+        # strip(): uno spazio o un a capo copiati per sbaglio con il token non devono bloccare tutto
+        ingest_token=os.environ.get("POLSO_INGEST_TOKEN", "").strip(),
         telegram_bot_token=os.environ.get("TELEGRAM_BOT_TOKEN", ""),
         telegram_chat_id=os.environ.get("TELEGRAM_CHAT_ID", ""),
         down_threshold=int(os.environ.get("POLSO_DOWN_THRESHOLD", "2")),

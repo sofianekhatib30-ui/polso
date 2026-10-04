@@ -18,6 +18,7 @@ readonly SCRIPT_DIR
 SITES_FILE="${POLSO_SITES_FILE:-$SCRIPT_DIR/sites.txt}"
 API_URL="${POLSO_API_URL:-http://localhost:8000}"
 TOKEN="${POLSO_INGEST_TOKEN:-}"
+TOKEN="${TOKEN//[$'\t\r\n ']/}"   # toglie spazi e a capo copiati per sbaglio con il token
 TIMEOUT="${POLSO_TIMEOUT:-15}"
 DRY_RUN=false
 EVERY=0

@@ -7,8 +7,9 @@ import { ExpiryRow, SecurityList, securityScore } from "@/components/Checks";
 import { PulseLegend, PulseStrip } from "@/components/PulseStrip";
 import { ResponseChart } from "@/components/ResponseChart";
 import { SiteIcon } from "@/components/SiteIcon";
+import { TimingBreakdown } from "@/components/Timing";
 import { Status, StatusShape, statusOf } from "@/components/Status";
-import { api, API_PUBLIC_URL, ApiError } from "@/lib/api";
+import { api, API_PUBLIC_URL, ApiError, type Timing } from "@/lib/api";
 import { dateLong, dateTime, host, ms, percent, timeAgo } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 
@@ -35,20 +36,21 @@ export default async function SitePage({
 
   let data;
   try {
-    const [site, series, transitions, incidents, daily, overview] = await Promise.all([
+    const [site, series, transitions, incidents, daily, overview, timing] = await Promise.all([
       api.site(id),
       api.series(id, hours),
       api.transitions(id),
       api.incidents({ siteId: id }),
       api.daily(90, { siteId: id }),
       api.sites(),
+      api.timing(id).catch(() => ({ samples: 0 }) as Timing),
     ]);
-    data = { site, series, transitions, incidents, daily, now: overview.find((s) => s.id === id) };
+    data = { site, series, transitions, incidents, daily, timing, now: overview.find((s) => s.id === id) };
   } catch (e) {
     if (e instanceof ApiError && e.message === "not-found") notFound();
     return <ApiDown message={e instanceof ApiError ? e.message : "Errore sconosciuto"} />;
   }
-  const { site, series, transitions, incidents, daily, now } = data;
+  const { site, series, transitions, incidents, daily, timing, now } = data;
   const kind = now ? statusOf(now) : "nodata";
   const checks90 = daily.reduce((a, d) => a + d.checks, 0);
   const up90 = daily.reduce((a, d) => a + d.up, 0);
@@ -146,6 +148,11 @@ export default async function SitePage({
         <div className="rounded-xl border border-line bg-surface p-4 sm:p-5">
           <ResponseChart points={series} incidents={incidents} />
         </div>
+      </section>
+
+      <section>
+        <SectionHead title="Dove va il tempo" />
+        <TimingBreakdown timing={timing} />
       </section>
 
       <div className="grid gap-12 md:grid-cols-2">

@@ -237,3 +237,21 @@ def test_icona_incorporata(client, auth):
     html = "data:text/html,<script>alert(1)</script>"
     client.post("/checks", json=[controllo("https://c.example.com", minuti_fa=1, icon_href=html)], headers=auth)
     assert client.get("/sites").json()[0]["icon_url"] == "https://c.example.com/favicon.ico"
+
+
+def test_tempi_scomposti(client, auth):
+    url = "https://lento.example.com"
+    t = {"redirect_ms": 900, "wait_ms": 1000, "download_ms": 100, "size_bytes": 50_000, "redirects": 1}
+    client.post("/checks", json=[controllo(url, minuti_fa=10, timing=t)], headers=auth)
+    client.post(
+        "/checks", json=[controllo(url, minuti_fa=5, timing={**t, "redirect_ms": 1100, "wait_ms": 1200})], headers=auth
+    )
+    r = client.get("/sites/1/timing").json()
+    assert r["samples"] == 2
+    assert (r["redirect_ms"], r["wait_ms"], r["redirects"]) == (1000, 1100, 1)  # mediane
+    assert r["last"]["redirect_ms"] == 1100
+    assert client.get("/sites").json()[0]["samples_24h"] == 2
+    # controllo senza scomposizione (checker vecchio): accettato, non entra nelle mediane
+    client.post("/checks", json=[controllo(url, minuti_fa=1)], headers=auth)
+    assert client.get("/sites/1/timing").json()["samples"] == 2
+    assert client.post("/checks", json=[controllo(url, timing={**t, "wait_ms": -1})], headers=auth).status_code == 422

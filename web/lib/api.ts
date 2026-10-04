@@ -13,6 +13,7 @@ export type SiteOverview = {
   uptime_7d: number | null;
   uptime_30d: number | null;
   p95_ms_24h: number | null;
+  samples_24h: number;
   ssl_days_left: number | null;
   domain_days_left: number | null;
   open_incident: boolean;
@@ -79,6 +80,16 @@ export type DayPoint = {
   checks: number;
   up: number;
   uptime: number | null; // null = nessun controllo quel giorno
+};
+
+export type Timing = {
+  samples: number;
+  redirect_ms: number | null;
+  wait_ms: number | null;
+  download_ms: number | null;
+  size_bytes: number | null;
+  redirects: number | null;
+  last: Record<string, number | string> | null;
 };
 
 export type Client = { slug: string; name: string; sites: number; uptime_30d: number | null };
@@ -154,6 +165,7 @@ export const api = {
   site: (id: number) => get<SiteDetail>(`/sites/${id}`),
   series: (id: number, hours = 72) => get<SeriesPoint[]>(`/sites/${id}/series?hours=${hours}`),
   transitions: (id: number) => get<Transition[]>(`/sites/${id}/transitions?limit=10`),
+  timing: (id: number) => get<Timing>(`/sites/${id}/timing`),
   daily: (days: number, f: Filter = {}) =>
     get<DayPoint[]>(`/uptime/daily${qs({ days, site_id: f.siteId, client: f.client })}`),
   incidents: (f: Filter = {}, limit = 20) =>

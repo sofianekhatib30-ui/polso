@@ -129,23 +129,29 @@ read_sites() {
     done < "$SITES_FILE"
 }
 
-# Controllo HTTP. Stampa: "codice millisecondi url_finale messaggio_errore".
+# Controllo HTTP. Stampa:
+#   "codice totale_ms url_finale redirect_ms attesa_ms download_ms byte n_redirect messaggio_errore"
+# dove totale = redirect + attesa (connessione, TLS e lavoro del server) + download della pagina.
 # Salva anche intestazioni e contenuto della pagina nei file $2 e $3, per gli altri controlli.
 # curl scrive 000 come codice quando non riceve risposta.
 check_http() {
-    local url="$1" headers="$2" body="$3" out err code seconds
+    local url="$1" headers="$2" body="$3" out err code total final redir start size nredir
     err="$(mktemp)"
     out="$(curl --silent --show-error --location --max-redirs 5 \
                 --max-time "$TIMEOUT" --max-filesize 5000000 \
                 --dump-header "$headers" --output "$body" \
                 --user-agent "PolsoMonitor/1.0" \
-                --write-out '%{http_code} %{time_total} %{url_effective}' \
+                --write-out '%{http_code} %{time_total} %{url_effective} %{time_redirect} %{time_starttransfer} %{size_download} %{num_redirects}' \
                 "$url" 2>"$err")" || true
-    local final
-    read -r code seconds final <<<"$out"
-    # secondi -> millisecondi, con awk perché bash non fa conti con i decimali
-    printf '%s %s %s %s\n' "${code:-000}" "$(awk -v s="${seconds:-0}" 'BEGIN { printf "%d", s * 1000 }')" \
-        "${final:-$url}" "$(head -c 300 "$err" | tr '\n' ' ')"
+    read -r code total final redir start size nredir <<<"$out"
+    # i tempi di curl sono cumulativi dall'inizio: si ricavano le parti per differenza.
+    # awk fa i conti con i decimali (bash no) e converte i secondi in millisecondi
+    local t_ms r_ms w_ms d_ms
+    read -r t_ms r_ms w_ms d_ms <<<"$(awk -v t="${total:-0}" -v r="${redir:-0}" -v s="${start:-0}" \
+        'BEGIN { w = s - r; if (w < 0) w = 0; d = t - s; if (d < 0) d = 0;
+                 printf "%d %d %d %d", t * 1000, r * 1000, w * 1000, d * 1000 }')"
+    printf '%s %s %s %s %s %s %s %s %s\n' "${code:-000}" "$t_ms" "${final:-$url}" "$r_ms" "$w_ms" "$d_ms" \
+        "${size:-0}" "${nredir:-0}" "$(head -c 300 "$err" | tr '\n' ' ')"
     rm -f "$err"
 }
 
@@ -210,9 +216,10 @@ ssl_expiry() {
 
 # Un controllo completo di un sito, in JSON.
 check_site() {
-    local url="$1" name="$2" client="$3" keyword="$4" logo="${5:-}" code ms final error expires headers body sec='[]' icon="" is_up=false
+    local url="$1" name="$2" client="$3" keyword="$4" logo="${5:-}" code ms final redir_ms wait_ms down_ms size nredir error
+    local expires headers body sec='[]' icon="" is_up=false
     headers="$(mktemp)"; body="$(mktemp)"
-    read -r code ms final error <<<"$(check_http "$url" "$headers" "$body")"
+    read -r code ms final redir_ms wait_ms down_ms size nredir error <<<"$(check_http "$url" "$headers" "$body")"
     expires="$(ssl_expiry "$url")"
     # su = ha risposto con un codice tra 200 e 399
     if [[ "$code" =~ ^[0-9]+$ ]] && (( code >= 200 && code < 400 )); then
@@ -238,7 +245,8 @@ check_site() {
           --argjson up "$is_up" --arg code "$code" --arg ms "$ms" \
           --arg exp "$expires" --arg err "$error" \
           --arg client "$client" --arg kw "$keyword" --argjson sec "$sec" \
-          --arg final "$final" --arg icon "$icon" '{
+          --arg final "$final" --arg icon "$icon" \
+          --arg rms "$redir_ms" --arg wms "$wait_ms" --arg dms "$down_ms" --arg size "$size" --arg nred "$nredir" '{
         url: $url,
         name: (if $name == "" then null else $name end),
         checked_at: $at,
@@ -251,7 +259,11 @@ check_site() {
         keyword: (if $kw == "" then null else $kw end),
         security_headers: (if $code == "000" then null else $sec end),
         final_url: (if $code == "000" or $final == "" then null else $final end),
-        icon_href: (if $icon == "" then null else $icon end)
+        icon_href: (if $icon == "" then null else $icon end),
+        timing: (if $up then {
+            redirect_ms: ($rms | tonumber), wait_ms: ($wms | tonumber), download_ms: ($dms | tonumber),
+            size_bytes: ($size | tonumber), redirects: ($nred | tonumber)
+        } else null end)
     }'
 }
 

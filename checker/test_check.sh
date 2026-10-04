@@ -66,12 +66,13 @@ http://127.0.0.1:$PORT/  Con testo giusto | cliente=Fondazione L'Ancora | cerca=
 http://127.0.0.1:$PORT/  Con testo sbagliato | cerca=prezzi
 http://127.0.0.1:$PORT/sicuro/  Sicuro | opzione=strana | logo=https://esempio.it/logo.svg
 http://127.0.0.1:$PORT/incorporata/  Icona incorporata
+http://127.0.0.1:$PORT/sicuro  Con redirect
 EOF
 
 echo "Checker: controlli su server locale"
 OUT="$(POLSO_TIMEOUT=5 "$SCRIPT_DIR/check.sh" --sites "$WORK/sites.txt" --dry-run 2>/dev/null)"
 
-assert_eq "JSON valido con 7 siti (commenti e righe errate ignorati)" "7" "$(jq 'length' <<<"$OUT")"
+assert_eq "JSON valido con 8 siti (commenti e righe errate ignorati)" "8" "$(jq 'length' <<<"$OUT")"
 assert_eq "sito che funziona è su"            "true"              "$(jq '.[0].is_up' <<<"$OUT")"
 assert_eq "codice 200"                        "200"               "$(jq '.[0].status_code' <<<"$OUT")"
 assert_eq "tempo di risposta è un numero"     "number"            "$(jq -r '.[0].response_ms | type' <<<"$OUT")"
@@ -93,6 +94,11 @@ assert_eq "icona letta dalla pagina"          "/icona.png?v=1&x=2" "$(jq -r '.[0
 assert_eq "logo= vince sull'icona della pagina" "https://esempio.it/logo.svg" "$(jq -r '.[5].icon_href' <<<"$OUT")"
 assert_eq "icona incorporata con apici e spazi" "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" "$(jq -r '.[6].icon_href' <<<"$OUT")"
 assert_eq "indirizzo finale dopo i redirect"  "http://127.0.0.1:$PORT/" "$(jq -r '.[0].final_url' <<<"$OUT")"
+assert_eq "tempi scomposti presenti"          "true"              "$(jq '.[0].timing | (.redirect_ms|type)=="number" and (.wait_ms|type)=="number" and (.download_ms|type)=="number"' <<<"$OUT")"
+assert_eq "peso della pagina in byte"         "$(wc -c < "$WORK/index.html" | tr -d ' ')" "$(jq '.[0].timing.size_bytes' <<<"$OUT")"
+assert_eq "nessun redirect"                   "0"                 "$(jq '.[0].timing.redirects' <<<"$OUT")"
+assert_eq "sito giù: niente tempi"            "null"              "$(jq '.[2].timing' <<<"$OUT")"
+assert_eq "un redirect seguito (/sicuro -> /sicuro/)" "1"        "$(jq '.[7].timing.redirects' <<<"$OUT")"
 
 echo "Checker: domini"
 mkdir -p "$WORK/rdap/domain"

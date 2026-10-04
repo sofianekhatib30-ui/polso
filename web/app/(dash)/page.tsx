@@ -142,7 +142,13 @@ export default async function Home() {
                     </div>
                     <div className="lg:text-right">
                       <dt className="text-xs text-muted lg:sr-only">p95 24 h</dt>
-                      <dd className="tabular">{ms(s.p95_ms_24h)}</dd>
+                      <dd
+                        className={`tabular ${s.samples_24h < 20 ? "text-muted" : ""}`}
+                        title={s.samples_24h < 20 ? `Solo ${s.samples_24h} controlli nelle 24 ore: valore indicativo` : undefined}
+                      >
+                        {s.samples_24h > 0 && s.samples_24h < 20 ? "≈ " : ""}
+                        {ms(s.p95_ms_24h)}
+                      </dd>
                     </div>
                     <div className="lg:text-right">
                       <dt className="text-xs text-muted lg:sr-only">Certificato SSL</dt>
@@ -156,6 +162,11 @@ export default async function Home() {
             ))}
           </ul>
         </div>
+        {sites.some((x) => x.samples_24h > 0 && x.samples_24h < 20) && (
+          <p className="mt-3 text-xs text-muted">
+            ≈ davanti al p95: meno di 20 controlli nelle ultime 24 ore, il valore è solo indicativo.
+          </p>
+        )}
       </section>
 
       <div className={heartbeats.length ? "grid gap-12 lg:grid-cols-[3fr_2fr]" : "max-w-3xl"}>

@@ -35,6 +35,16 @@ def _tz(value: datetime | None) -> datetime | None:
     return value
 
 
+class Timing(BaseModel):
+    """Dove va il tempo di una risposta (tutti in millisecondi, tranne il peso in byte)."""
+
+    redirect_ms: int = Field(ge=0, le=600_000)
+    wait_ms: int = Field(ge=0, le=600_000)
+    download_ms: int = Field(ge=0, le=600_000)
+    size_bytes: int = Field(ge=0, le=100_000_000)
+    redirects: int = Field(ge=0, le=50)
+
+
 class CheckIn(BaseModel):
     """Un controllo inviato dal checker."""
 
@@ -53,6 +63,7 @@ class CheckIn(BaseModel):
     # dove è finita la richiesta dopo i redirect, e l'icona dichiarata nella pagina (anche relativa)
     final_url: str | None = None
     icon_href: str | None = None
+    timing: Timing | None = None
 
     @field_validator("url")
     @classmethod

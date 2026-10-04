@@ -64,6 +64,9 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
     _check_token(given)
 
 
+_TIMING_FIELDS = ("redirect_ms", "wait_ms", "download_ms", "size_bytes", "redirects")
+
+
 def _default_name(url: str) -> str:
     return urlparse(url).hostname or url
 
@@ -141,6 +144,7 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
                     "ssl_expires_at": check.ssl_expires_at,
                     "error": check.error,
                     "security_headers": check.security_headers,
+                    **(check.timing.model_dump() if check.timing else dict.fromkeys(_TIMING_FIELDS)),
                 },
             )
 
@@ -212,6 +216,15 @@ def site_series(site_id: int, hours: Annotated[int, Query(ge=1, le=24 * 30)] = 7
     with db.connect() as conn:
         _require_active(conn, site_id)
         return db.fetch_all(conn, "response_series", {"site_id": site_id, "hours": hours})
+
+
+@app.get("/sites/{site_id}/timing")
+def site_timing(site_id: int) -> dict[str, Any]:
+    """Dove va il tempo di risposta: redirect, attesa del server e download (mediana 24 h e ultimo controllo)."""
+    with db.connect() as conn:
+        _require_active(conn, site_id)
+        row = db.fetch_one(conn, "timing_breakdown", {"site_id": site_id})
+    return row or {"samples": 0}
 
 
 @app.get("/sites/{site_id}/transitions")

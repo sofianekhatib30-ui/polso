@@ -76,7 +76,13 @@ BEGIN
             ('sites',  'icon_url',          'TEXT'),
             -- ultima soglia di scadenza già avvisata (vedi app/expiry.py): un avviso per soglia
             ('sites',  'ssl_alert_bucket',    'INTEGER'),
-            ('sites',  'domain_alert_bucket', 'INTEGER')
+            ('sites',  'domain_alert_bucket', 'INTEGER'),
+            -- dove va il tempo di risposta: redirect, attesa del server, download; peso della pagina
+            ('checks', 'redirect_ms', 'INTEGER'),
+            ('checks', 'wait_ms',     'INTEGER'),
+            ('checks', 'download_ms', 'INTEGER'),
+            ('checks', 'size_bytes',  'INTEGER'),
+            ('checks', 'redirects',   'INTEGER')
         ) AS v(tab, col, typ)
     LOOP
         IF NOT EXISTS (

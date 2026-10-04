@@ -16,6 +16,7 @@ SELECT
     st.uptime_7d,
     st.uptime_30d,
     round(st.p95_ms_24h)::int                    AS p95_ms_24h,
+    st.samples_24h,
     -- giorni interi che mancano alla scadenza del certificato (negativo = già scaduto)
     floor(extract(epoch FROM ssl.ssl_expires_at - now()) / 86400)::int AS ssl_days_left,
     floor(extract(epoch FROM s.domain_expires_at - now()) / 86400)::int AS domain_days_left,
@@ -44,7 +45,9 @@ LEFT JOIN LATERAL (
               / nullif(count(*), 0), 2)                                                              AS uptime_30d,
         -- 95° percentile: 95 risposte su 100 è più veloce di questo valore
         percentile_cont(0.95) WITHIN GROUP (ORDER BY c.response_ms)
-            FILTER (WHERE c.checked_at > now() - interval '24 hours')                                AS p95_ms_24h
+            FILTER (WHERE c.checked_at > now() - interval '24 hours')                                AS p95_ms_24h,
+        -- quanti tempi misurati nelle 24 ore: con pochi controlli il p95 coincide quasi con il peggiore
+        count(c.response_ms) FILTER (WHERE c.checked_at > now() - interval '24 hours')            AS samples_24h
     FROM checks c
     WHERE c.site_id = s.id
       AND c.checked_at > now() - interval '30 days'

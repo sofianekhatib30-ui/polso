@@ -159,12 +159,16 @@ icon_href() {
     line="$(grep -iE "rel=[\"']?apple-touch-icon" <<<"$links" | head -n 1)" || true
     [[ -n "$line" ]] || line="$(grep -iE "rel=[\"']?([a-z ]* )?icon[\"' >]" <<<"$links" | head -n 1)" || true
     [[ -n "$line" ]] || return 0
-    href="$(sed -nE "s/.*[[:space:]]href=[\"']?([^\"' >]+).*/\1/Ip" <<<"$line" | head -n 1)"
+    # href="..." (può contenere apici singoli e spazi), href='...' oppure href=senza-virgolette
+    href="$(sed -nE -e 's/.*[[:space:]]href="([^"]*)".*/\1/Ip;t' \
+                    -e "s/.*[[:space:]]href='([^']*)'.*/\\1/Ip;t" \
+                    -e 's/.*[[:space:]]href=([^ >]+).*/\1/Ip' <<<"$line" | head -n 1)"
     # \& perché da bash 5.2 una & nella sostituzione vuol dire "il testo trovato"
     href="${href//&amp;/\&}"
     # molte pagine incorporano l'icona (data:image/...): va bene, ma non oltre 100 KB
     if [[ "$href" == data:* ]]; then
         [[ "$href" == data:image/* && ${#href} -le 100000 ]] || return 0
+        href="${href// /%20}"   # spazi codificati: l'indirizzo resta valido ovunque
     elif (( ${#href} > 1000 )); then
         return 0
     fi

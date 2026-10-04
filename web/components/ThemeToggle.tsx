@@ -2,41 +2,46 @@
 
 import { useSyncExternalStore } from "react";
 
-type Theme = "light" | "dark" | "system";
-const LABELS: Record<Theme, string> = { system: "Automatico", light: "Chiaro", dark: "Scuro" };
-const NEXT: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
+type Theme = "light" | "dark";
+const LABELS: Record<Theme, string> = { light: "Chiaro", dark: "Scuro" };
+
+// Due soli temi. Alla prima visita si segue quello del dispositivo;
+// se lo cambi col pulsante, la scelta viene ricordata.
+const media = () => window.matchMedia("(prefers-color-scheme: dark)");
 
 function read(): Theme {
   try {
     const t = localStorage.getItem("polso-theme");
-    return t === "light" || t === "dark" ? t : "system";
+    if (t === "light" || t === "dark") return t;
   } catch {
-    return "system";
+    /* in navigazione privata si segue il dispositivo */
   }
+  return media().matches ? "dark" : "light";
 }
 
-// Piccolo "negozio" del tema: React lo rilegge quando cambia (anche da un'altra scheda).
+// Piccolo "negozio" del tema: React lo rilegge quando cambia
+// (dal pulsante, da un'altra scheda o dalle impostazioni del dispositivo).
 const listeners = new Set<() => void>();
 function subscribe(fn: () => void) {
   listeners.add(fn);
   window.addEventListener("storage", fn);
+  media().addEventListener("change", fn);
   return () => {
     listeners.delete(fn);
     window.removeEventListener("storage", fn);
+    media().removeEventListener("change", fn);
   };
 }
 
 export function ThemeToggle() {
-  // sul server il tema è sempre "system"; nel browser si legge quello salvato
-  const theme = useSyncExternalStore(subscribe, read, () => "system" as Theme);
+  // sul server non si conosce il dispositivo: si parte dal chiaro e il browser corregge subito
+  const theme = useSyncExternalStore(subscribe, read, () => "light" as Theme);
+  const next: Theme = theme === "light" ? "dark" : "light";
 
-  function cycle() {
-    const next = NEXT[theme];
-    if (next === "system") document.documentElement.removeAttribute("data-theme");
-    else document.documentElement.setAttribute("data-theme", next);
+  function toggle() {
+    document.documentElement.setAttribute("data-theme", next);
     try {
-      if (next === "system") localStorage.removeItem("polso-theme");
-      else localStorage.setItem("polso-theme", next);
+      localStorage.setItem("polso-theme", next);
     } catch {
       /* in navigazione privata il tema non viene ricordato: va bene così */
     }
@@ -46,10 +51,10 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      onClick={cycle}
+      onClick={toggle}
       className="inline-flex h-9 items-center gap-2 rounded-full border border-line px-3 text-sm text-ink-2 transition-colors hover:border-accent hover:text-ink"
-      aria-label={`Tema: ${LABELS[theme]}. Cambia tema`}
-      title={`Tema: ${LABELS[theme]}`}
+      aria-label={`Tema ${LABELS[theme].toLowerCase()}. Passa al tema ${LABELS[next].toLowerCase()}`}
+      title={`Passa al tema ${LABELS[next].toLowerCase()}`}
     >
       <ThemeIcon theme={theme} />
       <span className="hidden sm:inline">{LABELS[theme]}</span>
@@ -67,17 +72,9 @@ function ThemeIcon({ theme }: { theme: Theme }) {
       </svg>
     );
   }
-  if (theme === "dark") {
-    return (
-      <svg {...p} strokeLinejoin="round">
-        <path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z" />
-      </svg>
-    );
-  }
   return (
-    <svg {...p}>
-      <circle cx="8" cy="8" r="6" />
-      <path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor" stroke="none" />
+    <svg {...p} strokeLinejoin="round">
+      <path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z" />
     </svg>
   );
 }

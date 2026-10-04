@@ -60,7 +60,7 @@ def _check_token(given: str | None) -> None:
 
 def require_token(authorization: Annotated[str | None, Header()] = None) -> None:
     """Accetta solo richieste con l'header `Authorization: Bearer <token>` giusto."""
-    given = authorization[7:] if authorization and authorization.startswith("Bearer ") else None
+    given = authorization[7:].strip() if authorization and authorization.startswith("Bearer ") else None
     _check_token(given)
 
 

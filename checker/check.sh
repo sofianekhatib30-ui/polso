@@ -42,6 +42,7 @@ Opzioni:
   --domains          invece dei controlli, legge la scadenza dei domini (una volta al giorno basta)
   --heartbeats FILE  invia anche l'elenco delle attività programmate da sorvegliare
   --ping SLUG        a fine giro riuscito, dà un segno di vita all'attività SLUG
+  --test-alert       manda solo un messaggio di prova sui canali di avviso (Slack, Telegram)
   --dry-run          stampa il JSON invece di inviarlo
   --every SECONDI    ripete il controllo all'infinito ogni N secondi
   -h, --help         mostra questo aiuto
@@ -73,6 +74,7 @@ parse_args() {
             --domains) MODE=domains; shift ;;
             --heartbeats) HEARTBEATS_FILE="${2:?manca il file dopo --heartbeats}"; shift 2 ;;
             --ping)    PING_SLUG="${2:?manca lo slug dopo --ping}"; shift 2 ;;
+            --test-alert) MODE=test-alert; shift ;;
             --every)   EVERY="${2:?mancano i secondi dopo --every}"; shift 2 ;;
             -h|--help) usage; exit 0 ;;
             *)         die "opzione sconosciuta: $1 (usa --help)" ;;
@@ -395,6 +397,11 @@ run_checks() {
 }
 
 run_once() {
+    if [[ "$MODE" == test-alert ]]; then
+        post_json "/alerts/test" ""
+        log "messaggio di prova inviato"
+        return 0
+    fi
     if [[ "$MODE" == domains ]]; then
         check_domains
     else

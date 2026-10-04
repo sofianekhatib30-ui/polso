@@ -51,7 +51,7 @@ jobs:
           POLSO_INGEST_TOKEN: ${{ secrets.POLSO_INGEST_TOKEN }}
         run: |
           if [ "${{ inputs.modo }}" = "prova-avvisi" ]; then
-            curl -fsS -X POST -H "Authorization: Bearer $POLSO_INGEST_TOKEN" "$POLSO_API_URL/alerts/test"; echo
+            ./checker/check.sh --test-alert
           elif [ "$DOMINI" = "true" ]; then
             ./checker/check.sh --domains --ping controllo-domini
           else

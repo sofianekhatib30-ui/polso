@@ -108,3 +108,19 @@ def test_endpoint_non_apre_la_rete_interna(client, auth, server):
 def test_endpoint_rifiuta_schemi_strani(client, auth):
     res = client.post("/probe", json={"urls": ["file:///etc/passwd"]}, headers=auth)
     assert res.status_code == 422
+
+
+def test_senza_redirect_il_redirect_vale_zero(server, monkeypatch):
+    # la risoluzione del nome conta nell'attesa, non nel redirect (come curl)
+    real = probe.socket.getaddrinfo
+
+    def lenta(*args, **kwargs):
+        time.sleep(0.05)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(probe.socket, "getaddrinfo", lenta)
+    monkeypatch.setattr(probe, "_public_host", lambda host, port: probe.socket.getaddrinfo(host, port))
+    r = probe.measure(f"{server}/pagina")
+    assert r.redirects == 0
+    assert r.redirect_ms <= 5
+    assert r.wait_ms >= 50

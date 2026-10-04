@@ -93,7 +93,9 @@ def measure(url: str, timeout: float = 15.0, allow_private: bool = False) -> Pro
                 return Probe(url, None, redirects=hops, error=f"indirizzo non valido: {current[:200]}")
             port = parts.port or (443 if scheme == "https" else 80)
             key = (scheme, parts.hostname, port)
-            remaining = deadline - time.perf_counter()
+            # la richiesta parte qui: risoluzione del nome, connessione e TLS stanno nell'attesa, come in curl
+            request_at = time.perf_counter()
+            remaining = deadline - request_at
             if remaining <= 0:
                 return Probe(url, None, redirects=hops, error=f"tempo scaduto dopo {timeout:g} s")
             conn = conns.get(key)
@@ -105,7 +107,6 @@ def measure(url: str, timeout: float = 15.0, allow_private: bool = False) -> Pro
             if parts.query:
                 path += "?" + parts.query
 
-            request_at = time.perf_counter()
             conn.request("GET", path, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
             resp = conn.getresponse()
             first_byte_at = time.perf_counter()

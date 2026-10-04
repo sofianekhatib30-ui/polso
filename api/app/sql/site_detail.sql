@@ -1,0 +1,21 @@
+-- Statistiche di un singolo sito.
+-- Parametri: %(site_id)s
+SELECT
+    s.id,
+    s.name,
+    s.url,
+    s.created_at,
+    count(c.id)                                                        AS checks_30d,
+    round(100.0 * count(*) FILTER (WHERE c.is_up) / nullif(count(c.id), 0), 2) AS uptime_30d,
+    round(avg(c.response_ms) FILTER (WHERE c.checked_at > now() - interval '7 days'))::int AS avg_ms_7d,
+    round(percentile_cont(0.50) WITHIN GROUP (ORDER BY c.response_ms)
+          FILTER (WHERE c.checked_at > now() - interval '7 days'))::int AS p50_ms_7d,
+    round(percentile_cont(0.95) WITHIN GROUP (ORDER BY c.response_ms)
+          FILTER (WHERE c.checked_at > now() - interval '7 days'))::int AS p95_ms_7d,
+    max(c.checked_at)                                                  AS last_checked_at
+FROM sites s
+LEFT JOIN checks c
+       ON c.site_id = s.id
+      AND c.checked_at > now() - interval '30 days'
+WHERE s.id = %(site_id)s
+GROUP BY s.id;

@@ -1,0 +1,22 @@
+# segreti e configurazione locale
+.env
+.env.*
+!.env.example
+checker/sites.txt
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel/

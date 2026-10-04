@@ -1,0 +1,5 @@
+# Siti da controllare, uno per riga: URL e (facoltativo) un nome.
+# Copia questo file in sites.txt e modificalo: sites.txt non va su GitHub.
+https://kdigitalsolution.it  K Digital Solution
+https://naivy.it             Naivy
+https://moonzah.com          Moonzah

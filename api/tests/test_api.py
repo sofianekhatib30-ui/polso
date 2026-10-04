@@ -133,3 +133,11 @@ def test_nome_del_sito_aggiornato(client, auth):
     # un controllo senza nome non cancella quello già dato
     client.post("/checks", json=[controllo(2, True)], headers=auth)
     assert client.get("/sites").json()[0]["name"] == "Negozio Rossi"
+
+
+def test_schema_rieseguibile(clean_db):
+    # all'avvio l'API riesegue lo schema: su un database già pronto non deve dare errori
+    from app import db
+
+    db.ensure_schema()
+    db.ensure_schema()

@@ -11,7 +11,7 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
       # al primo avvio Postgres esegue in ordine i file di questa cartella: schema, poi dati di esempio
-      - ./db/migrations/001_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./api/app/sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U polso -d polso"]

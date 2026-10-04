@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import logging
 import secrets
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Annotated, Any
 from urllib.parse import urlparse
@@ -22,10 +24,23 @@ from .settings import settings
 
 log = logging.getLogger("polso")
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """All'avvio crea le tabelle se mancano: lo schema usa IF NOT EXISTS, quindi rieseguirlo non fa danni.
+    Così un database nuovo (Neon, Supabase, locale) è pronto senza passaggi manuali."""
+    try:
+        db.ensure_schema()
+    except Exception:  # database non raggiungibile: l'API parte lo stesso, /health dirà 503
+        log.exception("Creazione dello schema non riuscita")
+    yield
+
+
 app = FastAPI(
     title="Polso API",
     description="Monitor dei siti: controlli, uptime, incidenti.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 

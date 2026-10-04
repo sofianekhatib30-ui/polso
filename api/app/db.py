@@ -63,3 +63,9 @@ def fetch_one(conn: psycopg.Connection, name: str, params: dict[str, Any] | None
         cur.execute(query(name), params or {})
         row = cur.fetchone()
         return _json_friendly(row) if row else None
+
+
+def ensure_schema() -> None:
+    """Esegue schema.sql (solo CREATE ... IF NOT EXISTS)."""
+    with connect() as conn:
+        conn.execute(query("schema"))

@@ -21,7 +21,7 @@ os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ["POLSO_INGEST_TOKEN"] = TOKEN
 os.environ.pop("TELEGRAM_BOT_TOKEN", None)
 
-SCHEMA = Path(__file__).resolve().parents[2] / "db" / "migrations" / "001_schema.sql"
+SCHEMA = Path(__file__).resolve().parents[1] / "app" / "sql" / "schema.sql"
 
 
 def _database_available() -> bool:

@@ -44,7 +44,7 @@ Al primo avvio il database contiene tre siti di esempio con 30 giorni di storico
 ```bash
 # database: PostgreSQL 15+ in locale
 createdb polso
-psql polso -f db/migrations/001_schema.sql -f db/seed.sql
+psql polso -f api/app/sql/schema.sql -f db/seed.sql
 
 # API
 cd api && python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
@@ -83,4 +83,4 @@ Polso nasce da un'esigenza reale del mio studio: tenere d'occhio i siti dei clie
 
 ## Documenti
 
-- [`DEPLOY.md`](DEPLOY.md): messa online con Supabase, Vercel e GitHub Actions
+- [`DEPLOY.md`](DEPLOY.md): messa online con Neon, Vercel e GitHub Actions

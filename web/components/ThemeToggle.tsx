@@ -47,11 +47,38 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={cycle}
-      className="rounded-md border border-line px-3 py-1.5 text-sm text-ink-2 hover:bg-surface-2"
+      className="inline-flex h-9 items-center gap-2 rounded-full border border-line px-3 text-sm text-ink-2 transition-colors hover:border-accent hover:text-ink"
       aria-label={`Tema: ${LABELS[theme]}. Cambia tema`}
+      title={`Tema: ${LABELS[theme]}`}
     >
-      Tema: {LABELS[theme]}
+      <ThemeIcon theme={theme} />
+      <span className="hidden sm:inline">{LABELS[theme]}</span>
     </button>
+  );
+}
+
+function ThemeIcon({ theme }: { theme: Theme }) {
+  const p = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.5, "aria-hidden": true as const };
+  if (theme === "light") {
+    return (
+      <svg {...p} strokeLinecap="round">
+        <circle cx="8" cy="8" r="3" />
+        <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1" />
+      </svg>
+    );
+  }
+  if (theme === "dark") {
+    return (
+      <svg {...p} strokeLinejoin="round">
+        <path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...p}>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 

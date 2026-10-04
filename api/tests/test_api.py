@@ -171,3 +171,21 @@ def test_sync_disattiva_i_siti_tolti_dalla_lista(client, auth):
         headers=auth,
     )
     assert len(client.get("/sites").json()) == 2
+
+
+def test_uptime_giornaliero_con_giorni_vuoti(client, auth):
+    adesso = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
+    # oggi: 2 controlli su, 1 giù; due giorni fa: niente
+    batch = [
+        {**controllo(0, True), "checked_at": (adesso - timedelta(minutes=10)).isoformat()},
+        {**controllo(0, True), "checked_at": (adesso - timedelta(minutes=5)).isoformat()},
+        {**controllo(0, False), "checked_at": adesso.isoformat()},
+    ]
+    client.post("/checks", json=batch, headers=auth)
+    giorni = client.get("/uptime/daily", params={"days": 7}).json()
+    assert len(giorni) == 7  # un giorno per riga, anche quelli vuoti
+    oggi = giorni[-1]
+    assert (oggi["checks"], oggi["up"]) == (3, 2)
+    assert oggi["uptime"] == 66.67
+    vuoti = [g for g in giorni[:-2] if g["checks"] == 0]
+    assert vuoti and all(g["uptime"] is None for g in vuoti)

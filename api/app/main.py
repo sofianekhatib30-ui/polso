@@ -192,6 +192,16 @@ def list_incidents(site_id: int | None = None, limit: Annotated[int, Query(ge=1,
         return db.fetch_all(conn, "incidents_list", {"site_id": site_id, "limit": limit})
 
 
+@app.get("/uptime/daily")
+def uptime_daily(days: Annotated[int, Query(ge=1, le=365)] = 90, site_id: int | None = None) -> list[dict[str, Any]]:
+    """Uptime per giorno (calendario di Roma). I giorni senza controlli hanno checks = 0 e uptime = null."""
+    with db.connect() as conn:
+        if site_id is not None:
+            _require_active(conn, site_id)
+        rows = db.fetch_all(conn, "uptime_daily", {"days": days, "site_id": site_id})
+    return [{**r, "day": r["day"].isoformat()} for r in rows]
+
+
 @app.get("/ssl/expiring")
 def ssl_expiring(days: Annotated[int, Query(ge=1, le=365)] = 30) -> list[dict[str, Any]]:
     with db.connect() as conn:

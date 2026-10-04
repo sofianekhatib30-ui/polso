@@ -1,85 +1,145 @@
 @import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
 
-/* Colori come variabili: il tema scuro cambia solo i valori, non i componenti. */
+/*
+  Palette di Polso
+  viola   #662E9B  marchio: link, pulsanti, linea dei grafici. Mai uno stato.
+  azzurro #43BCCD  online
+  giallo  #F9C80E  attenzione (lento, certificato in scadenza)
+  arancio #F86624  parziale (alcuni controlli falliti)
+  rosso   #EA3546  giù
+  Sul chiaro gli stessi colori sono più scuri, per restare leggibili;
+  ogni stato ha anche una forma e una parola (mai solo il colore).
+*/
 :root {
   color-scheme: light;
-  --bg: #f6f6f4;
-  --surface: #fcfcfb;
-  --surface-2: #f0efec;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --muted: #76756f;
-  --line: #e2e1dc;
-  --series: #2a78d6;
-  --series-soft: #cde2fb;
-  --good: #0ca30c;
-  --good-ink: #006300;
-  --warn: #fab219;
-  --warn-ink: #7a5200;
-  --bad: #d03b3b;
-  --bad-ink: #a42323;
+  --bg: #f5f4f8;
+  --surface: #ffffff;
+  --surface-2: #eeecf3;
+  --line: #e3e0ea;
+  --ink: #1e1a27;
+  --ink-2: #575264;
+  --muted: #7d7789;
+  --accent: #662e9b;
+  --accent-soft: #efe7f7;
+  --ok: #1fa0b2;
+  --ok-ink: #0b6e7c;
+  --warn: #e0a800;
+  --warn-ink: #7a5600;
+  --partial: #f25a14;
+  --partial-ink: #b23f0b;
+  --down: #d42a3c;
+  --down-ink: #b71c2e;
+  --nodata: #d6d2de;
+  --brand-gradient: linear-gradient(90deg, #43bccd, #662e9b 35%, #ea3546 62%, #f86624 80%, #f9c80e);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --bg: #121211;
-    --surface: #1a1a19;
-    --surface-2: #232321;
-    --ink: #ffffff;
-    --ink-2: #c3c2b7;
-    --muted: #9a998f;
-    --line: #33332f;
-    --series: #3987e5;
-    --series-soft: #184f95;
-    --good-ink: #5fd35f;
-    --warn-ink: #fab219;
-    --bad-ink: #f08a8a;
+    --bg: #110f17;
+    --surface: #19161f;
+    --surface-2: #221e2a;
+    --line: #2e2a37;
+    --ink: #f2eff7;
+    --ink-2: #bdb7c9;
+    --muted: #8e879b;
+    --accent: #b48ae6;
+    --accent-soft: #2c2238;
+    --ok: #43bccd;
+    --ok-ink: #43bccd;
+    --warn: #f9c80e;
+    --warn-ink: #f9c80e;
+    --partial: #f86624;
+    --partial-ink: #f98a55;
+    --down: #ea3546;
+    --down-ink: #f0707c;
+    --nodata: #3a3544;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #121211;
-  --surface: #1a1a19;
-  --surface-2: #232321;
-  --ink: #ffffff;
-  --ink-2: #c3c2b7;
-  --muted: #9a998f;
-  --line: #33332f;
-  --series: #3987e5;
-  --series-soft: #184f95;
-  --good-ink: #5fd35f;
-  --warn-ink: #fab219;
-  --bad-ink: #f08a8a;
+  --bg: #110f17;
+  --surface: #19161f;
+  --surface-2: #221e2a;
+  --line: #2e2a37;
+  --ink: #f2eff7;
+  --ink-2: #bdb7c9;
+  --muted: #8e879b;
+  --accent: #b48ae6;
+  --accent-soft: #2c2238;
+  --ok: #43bccd;
+  --ok-ink: #43bccd;
+  --warn: #f9c80e;
+  --warn-ink: #f9c80e;
+  --partial: #f86624;
+  --partial-ink: #f98a55;
+  --down: #ea3546;
+  --down-ink: #f0707c;
+  --nodata: #3a3544;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-series: var(--series);
-  --color-good: var(--good);
-  --color-good-ink: var(--good-ink);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-ink: var(--ok-ink);
   --color-warn: var(--warn);
   --color-warn-ink: var(--warn-ink);
-  --color-bad: var(--bad);
-  --color-bad-ink: var(--bad-ink);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --color-partial: var(--partial);
+  --color-partial-ink: var(--partial-ink);
+  --color-down: var(--down);
+  --color-down-ink: var(--down-ink);
+  --color-nodata: var(--nodata);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "IBM Plex Sans", ui-sans-serif, sans-serif;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.brand-rule {
+  height: 2px;
+  background: var(--brand-gradient);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* caricamento: un'onda leggera, ferma se l'utente preferisce meno movimento */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
 }

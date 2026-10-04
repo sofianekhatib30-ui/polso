@@ -55,3 +55,14 @@ export function host(url: string): string {
     return url;
   }
 }
+
+export function dayLong(isoDay: string): string {
+  // "2026-10-04" è una data di calendario: la leggiamo a mezzogiorno per non cambiare giorno col fuso
+  return new Intl.DateTimeFormat("it-IT", { weekday: "short", day: "numeric", month: "long" }).format(
+    new Date(`${isoDay}T12:00:00`),
+  );
+}
+
+export function dayShort(isoDay: string): string {
+  return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(new Date(`${isoDay}T12:00:00`));
+}

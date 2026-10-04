@@ -57,6 +57,14 @@ export type Incident = {
   duration_min: number;
 };
 
+export type DayPoint = {
+  site_id: number;
+  day: string; // YYYY-MM-DD, calendario di Roma
+  checks: number;
+  up: number;
+  uptime: number | null; // null = nessun controllo quel giorno
+};
+
 export class ApiError extends Error {}
 
 const BASE = (process.env.POLSO_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -79,5 +87,7 @@ export const api = {
   site: (id: number) => get<SiteDetail>(`/sites/${id}`),
   series: (id: number, hours = 72) => get<SeriesPoint[]>(`/sites/${id}/series?hours=${hours}`),
   transitions: (id: number) => get<Transition[]>(`/sites/${id}/transitions?limit=10`),
+  daily: (days: number, siteId?: number) =>
+    get<DayPoint[]>(`/uptime/daily?days=${days}${siteId ? `&site_id=${siteId}` : ""}`),
   incidents: (siteId?: number) => get<Incident[]>(`/incidents?limit=20${siteId ? `&site_id=${siteId}` : ""}`),
 };

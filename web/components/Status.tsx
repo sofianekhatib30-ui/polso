@@ -1,44 +1,109 @@
-// Stato di un sito: sempre icona + parola, mai solo colore.
+// Stato di un sito: sempre forma + parola + colore, mai il solo colore.
+//   Online      cerchio pieno      azzurro
+//   Lento       rombo              giallo
+//   Instabile   triangolo          arancio
+//   Giù         quadrato con croce rosso
+//   Nessun dato cerchio tratteggiato grigio
 
-type Props = { isUp: boolean | null; openIncident?: boolean };
+import type { SiteOverview } from "@/lib/api";
 
-export function Status({ isUp, openIncident }: Props) {
-  if (isUp === null) {
-    return <span className="inline-flex items-center gap-1.5 text-sm text-muted">○ Nessun dato</span>;
-  }
-  if (!isUp || openIncident) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-bad-ink">
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-          <path d="M6 1 11 10H1z" fill="var(--bad)" />
+export type StatusKind = "ok" | "warn" | "partial" | "down" | "nodata";
+
+export const SLOW_MS = 3000;
+
+const LABEL: Record<StatusKind, string> = {
+  ok: "Online",
+  warn: "Lento",
+  partial: "Instabile",
+  down: "Giù",
+  nodata: "Nessun dato",
+};
+
+const INK: Record<StatusKind, string> = {
+  ok: "text-ok-ink",
+  warn: "text-warn-ink",
+  partial: "text-partial-ink",
+  down: "text-down-ink",
+  nodata: "text-muted",
+};
+
+export function statusOf(s: Pick<SiteOverview, "is_up" | "open_incident" | "response_ms">): StatusKind {
+  if (s.is_up === null) return "nodata";
+  if (!s.is_up) return "down";
+  if (s.open_incident) return "partial";
+  if (s.response_ms !== null && s.response_ms > SLOW_MS) return "warn";
+  return "ok";
+}
+
+export function StatusShape({ kind, size = 10 }: { kind: StatusKind; size?: number }) {
+  const common = { width: size, height: size, viewBox: "0 0 10 10", "aria-hidden": true as const };
+  switch (kind) {
+    case "ok":
+      return (
+        <svg {...common}>
+          <circle cx="5" cy="5" r="4.5" fill="var(--ok)" />
         </svg>
-        {isUp ? "Instabile" : "Giù"}
-      </span>
-    );
+      );
+    case "warn":
+      return (
+        <svg {...common}>
+          <path d="M5 0.3 9.7 5 5 9.7 0.3 5z" fill="var(--warn)" />
+        </svg>
+      );
+    case "partial":
+      return (
+        <svg {...common}>
+          <path d="M5 0.6 9.6 9.2H0.4z" fill="var(--partial)" />
+        </svg>
+      );
+    case "down":
+      return (
+        <svg {...common}>
+          <rect x="0.5" y="0.5" width="9" height="9" rx="1.5" fill="var(--down)" />
+          <path d="M3 3l4 4M7 3l-4 4" stroke="var(--surface)" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+      );
+    default:
+      return (
+        <svg {...common}>
+          <circle cx="5" cy="5" r="4" fill="none" stroke="var(--muted)" strokeWidth="1.2" strokeDasharray="2 1.6" />
+        </svg>
+      );
   }
+}
+
+export function Status({ kind, className = "" }: { kind: StatusKind; className?: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-good-ink">
-      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-        <circle cx="6" cy="6" r="5" fill="var(--good)" />
-      </svg>
-      Online
+    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${INK[kind]} ${className}`}>
+      <StatusShape kind={kind} />
+      {LABEL[kind]}
     </span>
   );
 }
 
-export function SslDays({ days }: { days: number | null }) {
-  if (days === null) return <span className="text-muted">—</span>;
-  if (days < 0) return <span className="font-medium text-bad-ink">▲ Scaduto</span>;
-  if (days <= 14) return <span className="font-medium text-warn-ink">▲ {days} giorni</span>;
-  return <span className="tabular">{days} giorni</span>;
+export function statusLabel(kind: StatusKind): string {
+  return LABEL[kind];
 }
 
-export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
-  return (
-    <div className="rounded-lg border border-line bg-surface p-4">
-      <div className="text-sm text-ink-2">{label}</div>
-      <div className="tabular mt-1 text-2xl font-semibold tracking-tight">{value}</div>
-      {hint && <div className="mt-1 text-xs text-muted">{hint}</div>}
-    </div>
-  );
+export function statusInk(kind: StatusKind): string {
+  return INK[kind];
+}
+
+export function SslDays({ days }: { days: number | null }) {
+  if (days === null) return <span className="text-muted">—</span>;
+  if (days < 0) {
+    return (
+      <span className="inline-flex items-center gap-1 font-medium text-down-ink">
+        <StatusShape kind="down" size={9} /> Scaduto
+      </span>
+    );
+  }
+  if (days <= 14) {
+    return (
+      <span className="tabular inline-flex items-center gap-1 font-medium text-warn-ink">
+        <StatusShape kind="warn" size={9} /> {days} g
+      </span>
+    );
+  }
+  return <span className="tabular">{days} g</span>;
 }

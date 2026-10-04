@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1024" height="1024">
+  <!-- Icona di Polso per Slack: fondo pieno, battito con i cinque colori, margine abbondante -->
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#43BCCD"/>
+      <stop offset="0.35" stop-color="#662E9B"/>
+      <stop offset="0.62" stop-color="#EA3546"/>
+      <stop offset="0.8" stop-color="#F86624"/>
+      <stop offset="1" stop-color="#F9C80E"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#19161f"/>
+  <g transform="translate(52 111.5) scale(8.5)" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 17h9l3.5-9 5.5 18 5-14 3 5h18"/>
+  </g>
+</svg>

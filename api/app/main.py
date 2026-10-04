@@ -164,21 +164,31 @@ def site_detail(site_id: int) -> dict[str, Any]:
     return row
 
 
+def _require_active(conn: Any, site_id: int) -> None:
+    """Un sito tolto dalla lista non si vede più dall'API pubblica, nemmeno conoscendo il suo id."""
+    if db.fetch_one(conn, "site_active", {"site_id": site_id}) is None:
+        raise HTTPException(404, "Sito non trovato")
+
+
 @app.get("/sites/{site_id}/series")
 def site_series(site_id: int, hours: Annotated[int, Query(ge=1, le=24 * 30)] = 72) -> list[dict[str, Any]]:
     with db.connect() as conn:
+        _require_active(conn, site_id)
         return db.fetch_all(conn, "response_series", {"site_id": site_id, "hours": hours})
 
 
 @app.get("/sites/{site_id}/transitions")
 def site_transitions(site_id: int, limit: Annotated[int, Query(ge=1, le=200)] = 20) -> list[dict[str, Any]]:
     with db.connect() as conn:
+        _require_active(conn, site_id)
         return db.fetch_all(conn, "transitions", {"site_id": site_id, "limit": limit})
 
 
 @app.get("/incidents")
 def list_incidents(site_id: int | None = None, limit: Annotated[int, Query(ge=1, le=200)] = 50) -> list[dict[str, Any]]:
     with db.connect() as conn:
+        if site_id is not None:
+            _require_active(conn, site_id)
         return db.fetch_all(conn, "incidents_list", {"site_id": site_id, "limit": limit})
 
 

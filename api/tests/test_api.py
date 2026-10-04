@@ -156,6 +156,12 @@ def test_sync_disattiva_i_siti_tolti_dalla_lista(client, auth):
     r = client.post("/checks", params={"sync": "true"}, json=[controllo(2, True)], headers=auth).json()
     assert r["sites_deactivated"] == 1
     assert [s["url"] for s in client.get("/sites").json()] == [URL]
+    # ...e non è più raggiungibile in nessun modo dall'API pubblica
+    nascosto = 2
+    assert client.get(f"/sites/{nascosto}").status_code == 404
+    assert client.get(f"/sites/{nascosto}/series").status_code == 404
+    assert client.get(f"/sites/{nascosto}/transitions").status_code == 404
+    assert client.get("/incidents", params={"site_id": nascosto}).status_code == 404
 
     # se torna nella lista, torna attivo
     client.post(

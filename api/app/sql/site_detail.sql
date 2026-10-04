@@ -18,4 +18,5 @@ LEFT JOIN checks c
        ON c.site_id = s.id
       AND c.checked_at > now() - interval '30 days'
 WHERE s.id = %(site_id)s
+  AND s.active  -- i siti tolti dalla lista non sono pubblici
 GROUP BY s.id;

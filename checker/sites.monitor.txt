@@ -8,8 +8,6 @@ https://naivy.it                         Naivy
 https://naomifilippi.it                  Naomi Filippi
 https://project-q9m5e.vercel.app         General Fruit (anteprima)
 https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta)
-https://pharospeople.vercel.app          Pharos People
 https://startappo.vercel.app             Startappo
 https://attestiamo.vercel.app            Attestiamo
 https://soglia-preview.vercel.app        Soglia
-https://polso-one.vercel.app             Polso (dashboard)

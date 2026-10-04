@@ -73,7 +73,10 @@ BEGIN
             -- header di sicurezza presenti nella risposta (es. {hsts,csp,nosniff})
             ('checks', 'security_headers',  'TEXT[]'),
             -- icona (favicon) del sito, letta dalla pagina: serve per riconoscerlo a colpo d'occhio
-            ('sites',  'icon_url',          'TEXT')
+            ('sites',  'icon_url',          'TEXT'),
+            -- ultima soglia di scadenza già avvisata (vedi app/expiry.py): un avviso per soglia
+            ('sites',  'ssl_alert_bucket',    'INTEGER'),
+            ('sites',  'domain_alert_bucket', 'INTEGER')
         ) AS v(tab, col, typ)
     LOOP
         IF NOT EXISTS (

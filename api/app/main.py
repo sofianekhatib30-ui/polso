@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import RedirectResponse
 
-from . import alerts, db
+from . import alerts, db, expiry
 from .incidents import CheckState, decide
 from .models import CheckIn, DomainIn, HeartbeatIn, IngestResult, slugify
 from .settings import settings
@@ -174,6 +174,7 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
         # il checker passa ogni 15 minuti: è il momento giusto per vedere se qualche attività è in ritardo
         for hb in db.fetch_all(conn, "heartbeats_mark_late"):
             to_alert.append(_late_text(hb))
+        to_alert += _expiry_alerts(conn)
 
     # Gli avvisi partono solo DOPO il commit: mai avvisare di qualcosa che non è stato salvato.
     for text in to_alert:
@@ -300,7 +301,25 @@ def save_domains(domains: list[DomainIn]) -> dict[str, int]:
                 {"url": d.url, "domain": d.domain, "expires_at": d.expires_at, "registrar": d.registrar},
             )
         )
+        to_alert = _expiry_alerts(conn)
+    for text in to_alert:
+        alerts.send(text)
     return {"saved": saved}
+
+
+def _expiry_alerts(conn: Any) -> list[str]:
+    """Testi degli avvisi di scadenza da mandare, aggiornando le soglie già avvisate (nella stessa transazione)."""
+    out: list[str] = []
+    for s in db.fetch_all(conn, "expiry_state"):
+        ssl_go, ssl_bucket = expiry.decide(s["ssl_days_left"], s["ssl_alert_bucket"], expiry.SSL_THRESHOLDS)
+        dom_go, dom_bucket = expiry.decide(s["domain_days_left"], s["domain_alert_bucket"], expiry.DOMAIN_THRESHOLDS)
+        if ssl_go:
+            out.append(expiry.ssl_text(s["name"], s["url"], s["ssl_days_left"]))
+        if dom_go:
+            out.append(expiry.domain_text(s["name"], s["domain"], s["domain_days_left"], s["domain_registrar"]))
+        if (ssl_bucket, dom_bucket) != (s["ssl_alert_bucket"], s["domain_alert_bucket"]):
+            db.execute(conn, "expiry_save", {"id": s["id"], "ssl_bucket": ssl_bucket, "domain_bucket": dom_bucket})
+    return out
 
 
 # --- Attività programmate (heartbeat) ----------------------------------------------------------

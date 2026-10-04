@@ -76,7 +76,7 @@ Se il segno di vita non arriva entro "ogni + tolleranza", la dashboard segna l'a
 
 ## 6. Avvisi su Slack
 
-Gli avvisi arrivano in un canale Slack: sito giù, sito tornato online, attività in ritardo, attività ripartita.
+Gli avvisi arrivano in un canale Slack: sito giù, sito tornato online, attività in ritardo, attività ripartita, certificato SSL in scadenza (a 14, 7, 3 e 1 giorno) e dominio in scadenza (a 30, 14, 7, 3 e 1 giorno). Ogni soglia viene avvisata una volta sola; dopo il rinnovo si riparte da capo.
 
 1. Su Slack crea il canale dove vuoi gli avvisi (per esempio `#polso`).
 2. Apri <https://api.slack.com/apps> → **Create New App** → **From scratch**. Nome `Polso`, scegli il tuo workspace.

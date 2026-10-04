@@ -1,7 +1,7 @@
 # Polso
 
 Monitor dei siti web per uno studio che gestisce i siti dei propri clienti.
-Ogni 15 minuti controlla se i siti rispondono, se mostrano la pagina giusta, quanto sono veloci, quali protezioni di sicurezza hanno e quando scadono certificato e dominio. Apre un incidente quando un sito è giù, lo chiude quando torna online e manda un avviso su Slack (o Telegram). Per ogni cliente c'è una pagina di stato da condividere e un report mensile da stampare.
+Ogni 15 minuti controlla se i siti rispondono, se mostrano la pagina giusta, quanto sono veloci, quali protezioni di sicurezza hanno e quando scadono certificato e dominio. Apre un incidente quando un sito è giù, lo chiude quando torna online e manda un avviso su Slack (o Telegram), anche quando certificato o dominio stanno per scadere. Per ogni cliente c'è una pagina di stato da condividere e un report mensile da stampare.
 
 **Demo:** dashboard [polso-one.vercel.app](https://polso-one.vercel.app) · API [polso-api.vercel.app/docs](https://polso-api.vercel.app/docs)
 

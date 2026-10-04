@@ -65,6 +65,12 @@ def fetch_one(conn: psycopg.Connection, name: str, params: dict[str, Any] | None
         return _json_friendly(row) if row else None
 
 
+def execute(conn: psycopg.Connection, name: str, params: dict[str, Any] | None = None) -> None:
+    """Per le query che non restituiscono righe (UPDATE senza RETURNING)."""
+    with conn.cursor() as cur:
+        cur.execute(query(name), params or {})
+
+
 def ensure_schema() -> None:
     """Esegue schema.sql (solo CREATE ... IF NOT EXISTS)."""
     with connect() as conn:

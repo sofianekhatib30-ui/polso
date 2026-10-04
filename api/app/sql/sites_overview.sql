@@ -5,6 +5,7 @@ SELECT
     s.name,
     s.url,
     s.client_name,
+    s.icon_url,
     s.client_slug,
     s.keyword,
     ultimo.checked_at                            AS last_checked_at,

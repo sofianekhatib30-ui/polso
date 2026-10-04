@@ -19,6 +19,7 @@ export type SiteOverview = {
   client_name: string | null;
   client_slug: string | null;
   keyword: string | null;
+  icon_url: string | null;
   security_headers: SecurityHeader[] | null;
 };
 
@@ -38,6 +39,7 @@ export type SiteDetail = {
   client_name: string | null;
   client_slug: string | null;
   keyword: string | null;
+  icon_url: string | null;
   domain: string | null;
   domain_expires_at: string | null;
   domain_registrar: string | null;
@@ -98,6 +100,7 @@ export type ReportSite = {
   url: string;
   client_name: string | null;
   client_slug: string | null;
+  icon_url: string | null;
   checks: number;
   up: number;
   uptime: number | null;

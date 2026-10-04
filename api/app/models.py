@@ -50,6 +50,9 @@ class CheckIn(BaseModel):
     client: str | None = Field(default=None, max_length=80)
     keyword: str | None = Field(default=None, max_length=200)
     security_headers: list[SecurityHeader] | None = Field(default=None, max_length=10)
+    # dove è finita la richiesta dopo i redirect, e l'icona dichiarata nella pagina (anche relativa)
+    final_url: str | None = Field(default=None, max_length=1000)
+    icon_href: str | None = Field(default=None, max_length=1000)
 
     @field_validator("url")
     @classmethod

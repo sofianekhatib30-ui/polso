@@ -6,6 +6,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { SiteIcon } from "./SiteIcon";
 import { StatusShape, type StatusKind } from "./Status";
 
 export type PaletteItem = {
@@ -14,6 +15,7 @@ export type PaletteItem = {
   detail?: string;
   group: "Pagine" | "Siti" | "Clienti";
   kind?: StatusKind;
+  icon?: string | null;
 };
 
 // "Città" e "citta" devono trovarsi a vicenda
@@ -153,6 +155,7 @@ export function CommandPalette({ items }: { items: PaletteItem[] }) {
                   <span className="flex w-4 justify-center">
                     {item.kind ? <StatusShape kind={item.kind} /> : <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
                   </span>
+                  {item.group === "Siti" && <SiteIcon src={item.icon ?? null} name={item.title} size={22} />}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-ink">{item.title}</span>
                     {item.detail && <span className="block truncate text-xs text-muted">{item.detail}</span>}

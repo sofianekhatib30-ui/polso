@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime
 from html import escape
 from typing import Annotated, Any
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
@@ -68,6 +68,16 @@ def _default_name(url: str) -> str:
     return urlparse(url).hostname or url
 
 
+def _icon_url(check: CheckIn) -> str | None:
+    """Indirizzo assoluto dell'icona del sito. Solo se il sito ha risposto; senza icona dichiarata
+    si prova /favicon.ico. Solo http(s): niente data: o javascript: in una <img>."""
+    if not check.is_up:
+        return None
+    base = check.final_url if check.final_url and check.final_url.startswith(("http://", "https://")) else check.url
+    icon = urljoin(base + ("" if urlparse(base).path else "/"), check.icon_href or "/favicon.ico")
+    return icon if urlparse(icon).scheme in ("http", "https") and len(icon) <= 1000 else None
+
+
 @app.get("/", include_in_schema=False)
 def root() -> RedirectResponse:
     # l'indirizzo principale porta alla documentazione interattiva
@@ -112,6 +122,7 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
                     "client_name": check.client,
                     "client_slug": slugify(check.client) if check.client else None,
                     "keyword": check.keyword,
+                    "icon_url": _icon_url(check),
                 },
             )
             assert site is not None

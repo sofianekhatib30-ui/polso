@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { ApiDown, SectionHead, StatRow } from "@/components/Blocks";
 import { PrintButton } from "@/components/Buttons";
+import { SiteIcon } from "@/components/SiteIcon";
 import { Logo } from "@/components/Logo";
 import { StatusShape } from "@/components/Status";
 import { api, ApiError, type Client, type Report } from "@/lib/api";
@@ -112,12 +113,19 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
               {report.sites.map((s) => (
                 <tr key={s.id} className="border-b border-line last:border-0">
                   <td className="px-4 py-3">
-                    <Link href={`/sites/${s.id}`} className="font-medium text-ink hover:text-accent">
-                      {s.name}
-                    </Link>
-                    <div className="text-xs text-muted">
-                      {host(s.url)}
-                      {!clientSlug && s.client_name ? `, ${s.client_name}` : ""}
+                    <div className="flex items-center gap-3">
+                      <SiteIcon src={s.icon_url} name={s.name} size={24} />
+                      <div>
+                        <Link href={`/sites/${s.id}`} className="font-medium text-ink hover:text-accent">
+                          {s.name}
+                        </Link>
+                        <div className="text-xs text-muted">
+                          <a href={s.url} target="_blank" rel="noreferrer" className="hover:text-accent">
+                            {host(s.url)}
+                          </a>
+                          {!clientSlug && s.client_name ? `, ${s.client_name}` : ""}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td className="tabular px-4 py-3 text-right whitespace-nowrap">{s.checks ? percent(s.uptime) : "nessun dato"}</td>

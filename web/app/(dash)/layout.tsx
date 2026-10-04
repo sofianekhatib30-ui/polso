@@ -41,6 +41,7 @@ async function paletteItems(): Promise<PaletteItem[]> {
         detail: [host(s.url), s.client_name].filter(Boolean).join(", "),
         group: "Siti" as const,
         kind: statusOf(s),
+        icon: s.icon_url,
       })),
       ...clients.map((c) => ({
         href: `/stato/${c.slug}`,

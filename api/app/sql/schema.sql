@@ -71,7 +71,9 @@ BEGIN
             ('sites',  'domain_registrar',  'TEXT'),
             ('sites',  'domain_checked_at', 'TIMESTAMPTZ'),
             -- header di sicurezza presenti nella risposta (es. {hsts,csp,nosniff})
-            ('checks', 'security_headers',  'TEXT[]')
+            ('checks', 'security_headers',  'TEXT[]'),
+            -- icona (favicon) del sito, letta dalla pagina: serve per riconoscerlo a colpo d'occhio
+            ('sites',  'icon_url',          'TEXT')
         ) AS v(tab, col, typ)
     LOOP
         IF NOT EXISTS (

@@ -196,3 +196,21 @@ def test_avvisi_slack(client, auth, monkeypatch):
     monkeypatch.setattr(alerts, "_post_json", rotto)
     assert alerts.send("prova") is False
     assert client.post("/alerts/test", headers=auth).status_code == 502
+
+
+def test_icona_del_sito(client, auth):
+    url = "https://icona.example.com"
+    # icona relativa, risolta sull'indirizzo finale dopo il redirect
+    c = controllo(url, final_url="https://www.icona.example.com/it/", icon_href="img/logo.png?v=2")
+    client.post("/checks", json=[c], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"] == "https://www.icona.example.com/it/img/logo.png?v=2"
+
+    # sito giù: l'icona nota resta
+    client.post("/checks", json=[controllo(url, minuti_fa=3, su=False)], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"].endswith("logo.png?v=2")
+
+    # senza icona dichiarata si prova /favicon.ico; javascript: non passa mai
+    client.post("/checks", json=[controllo(url, minuti_fa=2)], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"] == "https://icona.example.com/favicon.ico"
+    client.post("/checks", json=[controllo(url, minuti_fa=1, icon_href="javascript:alert(1)")], headers=auth)
+    assert client.get("/sites").json()[0]["icon_url"] == "https://icona.example.com/favicon.ico"

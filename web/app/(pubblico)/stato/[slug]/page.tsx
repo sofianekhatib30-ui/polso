@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 
 import { ApiDown } from "@/components/Blocks";
 import { PulseLegend, PulseStrip } from "@/components/PulseStrip";
+import { SiteIcon } from "@/components/SiteIcon";
 import { StatusShape, statusInk, statusOf, type StatusKind } from "@/components/Status";
 import { api, ApiError, type DayPoint } from "@/lib/api";
 import { dateTime, duration, host, percent, timeAgo } from "@/lib/format";
@@ -92,11 +93,19 @@ export default async function ClientStatusPage({ params }: { params: Promise<{ s
             return (
               <li key={s.id}>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <div>
-                    <h2 className="font-display text-xl font-semibold tracking-tight">{s.name}</h2>
-                    <a href={s.url} className="text-sm text-muted hover:text-accent" target="_blank" rel="noreferrer">
-                      {host(s.url)}
-                    </a>
+                  <div className="flex items-center gap-3">
+                    <SiteIcon src={s.icon_url} name={s.name} size={36} />
+                    <div>
+                      <h2 className="font-display text-xl font-semibold tracking-tight">{s.name}</h2>
+                      <a
+                        href={s.url}
+                        className="text-sm text-muted underline decoration-line underline-offset-2 hover:text-accent"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {host(s.url)}
+                      </a>
+                    </div>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${statusInk(kinds[i])}`}>
                     <StatusShape kind={kinds[i]} />

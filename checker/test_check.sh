@@ -33,7 +33,7 @@ assert_eq() {
 }
 
 # Server di prova: 200 su /, 404 su tutto il resto; /sicuro/ manda anche header di sicurezza.
-echo "ciao, benvenuti nel sito" > "$WORK/index.html"
+printf '<html><head><link rel="stylesheet" href="/s.css"><link sizes="32x32" rel="icon" href="/icona.png?v=1&amp;x=2"></head><body>ciao, benvenuti nel sito</body></html>' > "$WORK/index.html"
 mkdir -p "$WORK/sicuro" && echo "pagina sicura" > "$WORK/sicuro/index.html"
 cat > "$WORK/server.py" <<'PY'
 import functools, http.server, sys
@@ -87,6 +87,9 @@ assert_eq "errore del testo mancante"         'testo "prezzi" non trovato nella 
 assert_eq "nessun header di sicurezza"        "[]"                "$(jq -c '.[0].security_headers' <<<"$OUT")"
 assert_eq "header di sicurezza riconosciuti"  '["hsts","csp","nosniff","frame"]' "$(jq -c '.[5].security_headers' <<<"$OUT")"
 assert_eq "porta chiusa: header sconosciuti"  "null"              "$(jq '.[2].security_headers' <<<"$OUT")"
+assert_eq "icona letta dalla pagina"          "/icona.png?v=1&x=2" "$(jq -r '.[0].icon_href' <<<"$OUT")"
+assert_eq "pagina senza icona"                "null"              "$(jq '.[5].icon_href' <<<"$OUT")"
+assert_eq "indirizzo finale dopo i redirect"  "http://127.0.0.1:$PORT/" "$(jq -r '.[0].final_url' <<<"$OUT")"
 
 echo "Checker: domini"
 mkdir -p "$WORK/rdap/domain"

@@ -11,6 +11,7 @@ SELECT
     s.name,
     s.url,
     s.client_name,
+    s.icon_url,
     s.client_slug,
     count(c.id)                                                                  AS checks,
     count(c.id) FILTER (WHERE c.is_up)                                           AS up,

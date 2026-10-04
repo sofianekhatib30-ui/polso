@@ -6,6 +6,7 @@ import { CopyButton } from "@/components/Buttons";
 import { ExpiryRow, SecurityList, securityScore } from "@/components/Checks";
 import { PulseLegend, PulseStrip } from "@/components/PulseStrip";
 import { ResponseChart } from "@/components/ResponseChart";
+import { SiteIcon } from "@/components/SiteIcon";
 import { Status, StatusShape, statusOf } from "@/components/Status";
 import { api, API_PUBLIC_URL, ApiError } from "@/lib/api";
 import { dateLong, dateTime, host, ms, percent, timeAgo } from "@/lib/format";
@@ -69,9 +70,12 @@ export default async function SitePage({
             {now?.response_ms != null ? ` in ${ms(now.response_ms)}` : ""}.
           </span>
         </div>
-        <h1 className="mt-3 font-display text-4xl leading-[1.05] font-semibold tracking-tight break-words sm:text-6xl">
-          {site.name}
-        </h1>
+        <div className="mt-3 flex items-center gap-4">
+          <SiteIcon src={site.icon_url} name={site.name} size={52} />
+          <h1 className="min-w-0 font-display text-4xl leading-[1.05] font-semibold tracking-tight break-words sm:text-6xl">
+            {site.name}
+          </h1>
+        </div>
         <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-ink-2">
           <a
             href={site.url}
@@ -79,7 +83,7 @@ export default async function SitePage({
             target="_blank"
             rel="noreferrer"
           >
-            {host(site.url)}
+            Apri {host(site.url)}
           </a>
           {site.client_slug && (
             <Link href={`/stato/${site.client_slug}`} className="text-sm hover:text-accent">

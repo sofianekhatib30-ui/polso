@@ -128,7 +128,7 @@ read_sites() {
     done < "$SITES_FILE"
 }
 
-# Controllo HTTP. Stampa: "codice millisecondi messaggio_errore".
+# Controllo HTTP. Stampa: "codice millisecondi url_finale messaggio_errore".
 # Salva anche intestazioni e contenuto della pagina nei file $2 e $3, per gli altri controlli.
 # curl scrive 000 come codice quando non riceve risposta.
 check_http() {
@@ -138,13 +138,29 @@ check_http() {
                 --max-time "$TIMEOUT" --max-filesize 5000000 \
                 --dump-header "$headers" --output "$body" \
                 --user-agent "PolsoMonitor/1.0" \
-                --write-out '%{http_code} %{time_total}' \
+                --write-out '%{http_code} %{time_total} %{url_effective}' \
                 "$url" 2>"$err")" || true
-    code="${out%% *}"
-    seconds="${out##* }"
+    local final
+    read -r code seconds final <<<"$out"
     # secondi -> millisecondi, con awk perché bash non fa conti con i decimali
-    printf '%s %s %s\n' "${code:-000}" "$(awk -v s="${seconds:-0}" 'BEGIN { printf "%d", s * 1000 }')" "$(head -c 300 "$err" | tr '\n' ' ')"
+    printf '%s %s %s %s\n' "${code:-000}" "$(awk -v s="${seconds:-0}" 'BEGIN { printf "%d", s * 1000 }')" \
+        "${final:-$url}" "$(head -c 300 "$err" | tr '\n' ' ')"
     rm -f "$err"
+}
+
+# Indirizzo dell'icona del sito, come scritto nella pagina (può essere relativo: lo risolve l'API).
+# Preferisce l'apple-touch-icon (PNG grande e nitido), altrimenti la prima icona dichiarata.
+# Vuoto se la pagina non ne dichiara: l'API proverà /favicon.ico.
+icon_href() {
+    local file="$1" links line href
+    [[ -s "$file" ]] || return 0
+    links="$(grep -oiE '<link[^>]+>' "$file" 2>/dev/null | head -n 80)" || return 0
+    line="$(grep -iE "rel=[\"']?apple-touch-icon" <<<"$links" | head -n 1)" || true
+    [[ -n "$line" ]] || line="$(grep -iE "rel=[\"']?([a-z ]* )?icon[\"' >]" <<<"$links" | head -n 1)" || true
+    [[ -n "$line" ]] || return 0
+    href="$(sed -nE "s/.*[[:space:]]href=[\"']?([^\"' >]+).*/\1/Ip" <<<"$line" | head -n 1)"
+    # \& perché da bash 5.2 una & nella sostituzione vuol dire "il testo trovato"
+    printf '%s' "${href//&amp;/\&}"
 }
 
 # Header di sicurezza della risposta FINALE (dopo i redirect), come array JSON di nomi corti.
@@ -182,14 +198,15 @@ ssl_expiry() {
 
 # Un controllo completo di un sito, in JSON.
 check_site() {
-    local url="$1" name="$2" client="$3" keyword="$4" code ms error expires headers body sec='[]' is_up=false
+    local url="$1" name="$2" client="$3" keyword="$4" code ms final error expires headers body sec='[]' icon="" is_up=false
     headers="$(mktemp)"; body="$(mktemp)"
-    read -r code ms error <<<"$(check_http "$url" "$headers" "$body")"
+    read -r code ms final error <<<"$(check_http "$url" "$headers" "$body")"
     expires="$(ssl_expiry "$url")"
     # su = ha risposto con un codice tra 200 e 399
     if [[ "$code" =~ ^[0-9]+$ ]] && (( code >= 200 && code < 400 )); then
         is_up=true
         sec="$(security_headers "$headers")"
+        icon="$(icon_href "$body")"
         # risponde, ma la pagina è quella giusta? (un 200 può essere anche una pagina di errore)
         if [[ -n "$keyword" ]] && ! grep -qiF -- "$keyword" "$body"; then
             is_up=false
@@ -207,7 +224,8 @@ check_site() {
     jq -n --arg url "$url" --arg name "$name" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
           --argjson up "$is_up" --arg code "$code" --arg ms "$ms" \
           --arg exp "$expires" --arg err "$error" \
-          --arg client "$client" --arg kw "$keyword" --argjson sec "$sec" '{
+          --arg client "$client" --arg kw "$keyword" --argjson sec "$sec" \
+          --arg final "$final" --arg icon "$icon" '{
         url: $url,
         name: (if $name == "" then null else $name end),
         checked_at: $at,
@@ -218,7 +236,9 @@ check_site() {
         error: (if $err == "" then null else $err end),
         client: (if $client == "" then null else $client end),
         keyword: (if $kw == "" then null else $kw end),
-        security_headers: (if $code == "000" then null else $sec end)
+        security_headers: (if $code == "000" then null else $sec end),
+        final_url: (if $code == "000" or $final == "" then null else $final end),
+        icon_href: (if $icon == "" then null else $icon end)
     }'
 }
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ApiDown, IncidentList, SectionHead, StatRow } from "@/components/Blocks";
 import { HeartbeatList } from "@/components/Checks";
 import { PulseLegend, PulseStrip } from "@/components/PulseStrip";
+import { ExternalLink, SiteIcon } from "@/components/SiteIcon";
 import { SslDays, Status, StatusShape, statusInk, statusLabel, statusOf, type StatusKind } from "@/components/Status";
 import { api, ApiError, type DayPoint, type Heartbeat, type Incident, type SiteOverview } from "@/lib/api";
 import { host, ms, percent, timeAgo } from "@/lib/format";
@@ -89,7 +90,7 @@ export default async function Home() {
         <div className="rounded-xl border border-line bg-surface">
           <div
             aria-hidden="true"
-            className="hidden grid-cols-[minmax(13rem,16rem)_1fr_6rem_6rem_5rem] gap-6 border-b border-line px-5 py-2.5 text-xs text-muted lg:grid"
+            className="hidden grid-cols-[minmax(15rem,18rem)_1fr_6rem_6rem_5rem] gap-6 border-b border-line px-5 py-2.5 text-xs text-muted lg:grid"
           >
             <span>Sito</span>
             <span className="flex justify-between">
@@ -102,18 +103,23 @@ export default async function Home() {
           </div>
           <ul>
             {ordered.map(({ site: s, kind }) => (
-              <li key={s.id} className="border-b border-line last:border-0">
-                <Link
-                  href={`/sites/${s.id}`}
-                  className="group grid gap-x-6 gap-y-3 px-5 py-4 transition-colors hover:bg-surface-2 lg:grid-cols-[minmax(13rem,16rem)_1fr_6rem_6rem_5rem] lg:items-center"
-                >
-                  <div className="flex min-w-0 items-start justify-between gap-3">
-                    <div className="min-w-0">
+              <li key={s.id} className="group relative border-b border-line transition-colors last:border-0 hover:bg-surface-2">
+                {/* tutta la riga porta al dettaglio (il link del nome si allarga con after:inset-0);
+                    striscia e freccia stanno sopra, così tooltip e link al sito restano cliccabili */}
+                <div className="grid gap-x-6 gap-y-3 px-5 py-4 lg:grid-cols-[minmax(15rem,18rem)_1fr_6rem_6rem_5rem] lg:items-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <SiteIcon src={s.icon_url} name={s.name} />
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="hidden shrink-0 lg:inline-flex">
                           <StatusShape kind={kind} />
                         </span>
-                        <span className="truncate font-medium text-ink group-hover:text-accent">{s.name}</span>
+                        <Link
+                          href={`/sites/${s.id}`}
+                          className="truncate font-medium text-ink group-hover:text-accent after:absolute after:inset-0 after:content-['']"
+                        >
+                          {s.name}
+                        </Link>
                       </div>
                       <div className="truncate text-xs text-muted lg:pl-[18px]">
                         {kind !== "ok" && <span className={`hidden font-medium lg:inline ${statusInk(kind)}`}>{statusLabel(kind)}, </span>}
@@ -121,11 +127,13 @@ export default async function Home() {
                       </div>
                     </div>
                     <Status kind={kind} className="shrink-0 lg:hidden" />
+                    <ExternalLink href={s.url} label={`Apri ${s.name} in una nuova scheda`} />
                   </div>
 
-                  <div className="min-w-0">
+                  {/* link a parte (stesso dettaglio): sopra l'altro, così i tooltip della striscia funzionano */}
+                  <Link href={`/sites/${s.id}`} tabIndex={-1} aria-hidden="true" className="relative z-10 block min-w-0">
                     <PulseStrip days={strips.get(s.id) ?? []} height={26} />
-                  </div>
+                  </Link>
 
                   <dl className="grid grid-cols-3 gap-4 text-sm lg:contents">
                     <div className="lg:text-right">
@@ -143,7 +151,7 @@ export default async function Home() {
                       </dd>
                     </div>
                   </dl>
-                </Link>
+                </div>
               </li>
             ))}
           </ul>

@@ -6,6 +6,7 @@ SELECT
     s.url,
     s.created_at,
     s.client_name,
+    s.icon_url,
     s.client_slug,
     s.keyword,
     s.domain,

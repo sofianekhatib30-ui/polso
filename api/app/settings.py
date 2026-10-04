@@ -11,11 +11,14 @@ class Settings:
     database_url: str
     # token che il checker deve mandare per poter scrivere i controlli
     ingest_token: str
-    # avvisi Telegram facoltativi: se mancano, gli avvisi sono spenti
+    # avvisi facoltativi: Slack (webhook) e/o Telegram; se mancano, gli avvisi sono spenti
+    slack_webhook_url: str
     telegram_bot_token: str
     telegram_chat_id: str
     # quanti controlli "giù" di fila servono per aprire un incidente
     down_threshold: int
+    # indirizzo della dashboard, per il link negli avvisi
+    public_url: str
 
 
 def load() -> Settings:
@@ -23,9 +26,11 @@ def load() -> Settings:
         database_url=os.environ.get("DATABASE_URL", "postgresql://postgres@localhost:5432/polso").strip(),
         # strip(): uno spazio o un a capo copiati per sbaglio con il token non devono bloccare tutto
         ingest_token=os.environ.get("POLSO_INGEST_TOKEN", "").strip(),
+        slack_webhook_url=os.environ.get("SLACK_WEBHOOK_URL", "").strip(),
         telegram_bot_token=os.environ.get("TELEGRAM_BOT_TOKEN", ""),
         telegram_chat_id=os.environ.get("TELEGRAM_CHAT_ID", ""),
         down_threshold=int(os.environ.get("POLSO_DOWN_THRESHOLD", "2")),
+        public_url=os.environ.get("POLSO_PUBLIC_URL", "https://polso-one.vercel.app").rstrip("/"),
     )
 
 

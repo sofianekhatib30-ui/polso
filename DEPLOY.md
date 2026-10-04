@@ -74,15 +74,18 @@ curl -fsS -X POST -H "Authorization: Bearer $POLSO_INGEST_TOKEN" https://polso-a
 
 Se il segno di vita non arriva entro "ogni + tolleranza", la dashboard segna l'attività in ritardo e parte un avviso.
 
-## 6. Avvisi su Telegram (facoltativo)
+## 6. Avvisi su Slack
 
-1. Su Telegram scrivi a **@BotFather**, comando `/newbot`: alla fine ti dà il token del bot.
-2. Scrivi un messaggio qualsiasi al tuo bot, poi apri `https://api.telegram.org/bot<TOKEN>/getUpdates`: il numero in `chat.id` è il tuo chat id.
-3. Su Vercel, progetto dell'API → Settings → Environment Variables: aggiungi `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`, poi *Redeploy*.
+Gli avvisi arrivano in un canale Slack: sito giù, sito tornato online, attività in ritardo, attività ripartita.
 
-Da quel momento arrivano: sito giù, sito tornato online, attività in ritardo, attività ripartita.
+1. Su Slack crea il canale dove vuoi gli avvisi (per esempio `#polso`).
+2. Apri <https://api.slack.com/apps> → **Create New App** → **From scratch**. Nome `Polso`, scegli il tuo workspace.
+3. Nel menu a sinistra **Incoming Webhooks** → attiva l'interruttore → **Add New Webhook to Workspace** → scegli il canale → **Allow**.
+4. Copia l'indirizzo che compare (`https://hooks.slack.com/services/...`). È una chiave: chi lo ha può scrivere nel canale, quindi non va nel codice.
+5. Su Vercel, progetto **polso-api** → Settings → Environment Variables → `SLACK_WEBHOOK_URL` = quell'indirizzo → Save, poi Deployments → ultimo deploy → **Redeploy**.
+6. Prova: GitHub → Actions → **Monitor** → Run workflow → modo `prova-avvisi`. Nel canale arriva "Polso è collegato".
 
-> GitHub sospende i workflow programmati di un repository senza attività per 60 giorni: un commit ogni tanto, o un clic su *Enable workflow*, li riattiva.
+In alternativa, o in più, Telegram: crea un bot con **@BotFather** (`/newbot`), scrivigli un messaggio, prendi il `chat.id` da `https://api.telegram.org/bot<TOKEN>/getUpdates` e imposta `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` sull'API.
 
 ## Elenco dei segreti
 
@@ -92,6 +95,7 @@ Da quel momento arrivano: sito giù, sito tornato online, attività in ritardo, 
 | `POLSO_INGEST_TOKEN` | API (Vercel) e GitHub Actions |
 | `POLSO_API_URL` | Dashboard (Vercel) e GitHub Actions |
 | `POLSO_SITES` | GitHub Actions |
+| `SLACK_WEBHOOK_URL` | API (facoltativo, avvisi su Slack) |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | API (facoltativi) |
 
 Nessuno di questi valori va scritto nel codice o committato. Dashboard, API in lettura e log di GitHub Actions sono pubblici: si monitorano solo siti propri o di clienti che sono d'accordo.

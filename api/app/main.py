@@ -1,6 +1,6 @@
 """API di Polso.
 
-Scrittura (protetta da token):  POST /checks, /domains, /heartbeats, /ping/{slug}
+Scrittura (protetta da token):  POST /checks, /domains, /heartbeats, /ping/{slug}, /alerts/test
 Lettura (pubblica):             GET /sites, /sites/{id}, /sites/{id}/series, /sites/{id}/transitions,
                                 /incidents, /uptime/daily, /clients, /heartbeats, /report,
                                 /badge/{id}.svg, /ssl/expiring, /health
@@ -143,14 +143,16 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
                     conn, "open_new_incident", {"site_id": site_id, "started_at": decision.at, "cause": decision.cause}
                 ):
                     opened += 1
-                    to_alert.append(f"🔴 {check.url} è giù ({decision.cause or 'nessuna risposta'})")
+                    nome = check.name or _default_name(check.url)
+                    causa = decision.cause or "nessuna risposta"
+                    to_alert.append(f"🔴 *{nome}* non risponde: {causa}\n{check.url}")
             elif (
                 decision.action == "close"
                 and open_incident
                 and db.fetch_one(conn, "resolve_incident", {"id": open_incident["id"], "resolved_at": decision.at})
             ):
                 resolved += 1
-                to_alert.append(f"🟢 {check.url} è tornato online")
+                to_alert.append(f"🟢 *{check.name or _default_name(check.url)}* è di nuovo online\n{check.url}")
 
         deactivated = 0
         if sync:
@@ -233,6 +235,21 @@ def ssl_expiring(days: Annotated[int, Query(ge=1, le=365)] = 30) -> list[dict[st
         return db.fetch_all(conn, "ssl_expiring", {"days": days})
 
 
+# --- Avvisi ------------------------------------------------------------------------------------
+
+
+@app.post("/alerts/test", dependencies=[Depends(require_token)])
+def alerts_test() -> dict[str, Any]:
+    """Manda un messaggio di prova sui canali configurati (Slack, Telegram), per verificare la configurazione."""
+    configured = alerts.channels()
+    if not configured:
+        raise HTTPException(409, "Nessun canale configurato: imposta SLACK_WEBHOOK_URL (o Telegram) sull'API")
+    sent = alerts.send("👋 *Polso* è collegato: da qui arriveranno gli avvisi quando un sito va giù o torna online.")
+    if not sent:
+        raise HTTPException(502, "Invio non riuscito: controlla l'indirizzo del webhook")
+    return {"ok": True, "channels": configured}
+
+
 # --- Clienti -----------------------------------------------------------------------------------
 
 
@@ -305,7 +322,8 @@ def list_heartbeats() -> list[dict[str, Any]]:
 
 
 def _late_text(hb: dict[str, Any]) -> str:
-    return f"⏰ {hb['name']} non dà segni di vita dal {hb['last_ping_at']:%d/%m alle %H:%M} UTC"
+    when = hb["last_ping_at"].astimezone(ROME)
+    return f"⏰ *{hb['name']}* non dà segni di vita dal {when:%d/%m alle %H:%M}"
 
 
 @app.post("/ping/{slug}", dependencies=[Depends(require_token)])
@@ -317,7 +335,7 @@ def ping(slug: str) -> dict[str, Any]:
     if row is None:
         raise HTTPException(404, "Attività non trovata: definiscila prima con POST /heartbeats")
     if row["was_late"]:
-        alerts.send(f"✅ {row['name']} ha ripreso a dare segni di vita")
+        alerts.send(f"✅ *{row['name']}* ha ripreso a dare segni di vita")
     return {"ok": True, "slug": slug, "pinged_at": row["last_ping_at"]}
 
 

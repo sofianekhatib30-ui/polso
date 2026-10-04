@@ -2,6 +2,7 @@
 # Nessun server da tenere acceso.
 #   ogni 15 minuti  controllo dei siti (stato, tempi, testo atteso, header, certificato)
 #   una volta al dì scadenza dei domini (RDAP o whois), poi segno di vita "controllo-domini"
+#   a mano          "prova-avvisi" manda un messaggio di prova su Slack/Telegram
 name: Monitor
 
 on:
@@ -13,7 +14,7 @@ on:
       modo:
         description: "Cosa eseguire"
         type: choice
-        options: [controlli, domini]
+        options: [controlli, domini, prova-avvisi]
         default: controlli
 
 permissions:
@@ -49,7 +50,9 @@ jobs:
           POLSO_API_URL: ${{ secrets.POLSO_API_URL }}
           POLSO_INGEST_TOKEN: ${{ secrets.POLSO_INGEST_TOKEN }}
         run: |
-          if [ "$DOMINI" = "true" ]; then
+          if [ "${{ inputs.modo }}" = "prova-avvisi" ]; then
+            curl -fsS -X POST -H "Authorization: Bearer $POLSO_INGEST_TOKEN" "$POLSO_API_URL/alerts/test"; echo
+          elif [ "$DOMINI" = "true" ]; then
             ./checker/check.sh --domains --ping controllo-domini
           else
             ./checker/check.sh --heartbeats checker/heartbeats.txt

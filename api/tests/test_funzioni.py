@@ -22,7 +22,7 @@ def controllo(url: str, minuti_fa: int = 5, su: bool = True, **extra) -> dict:
 
 @pytest.fixture()
 def avvisi(monkeypatch):
-    """Raccoglie gli avvisi invece di mandarli su Telegram."""
+    """Raccoglie gli avvisi invece di mandarli su Slack o Telegram."""
     inviati: list[str] = []
     from app import alerts
 
@@ -167,3 +167,32 @@ def test_badge(client, auth):
     assert r.headers["content-type"].startswith("image/svg+xml")
     assert "uptime 30g" in r.text and "50%" in r.text and "#ea3546" in r.text
     assert client.get("/badge/99.svg").status_code == 404
+
+
+def test_avvisi_slack(client, auth, monkeypatch):
+    import dataclasses
+
+    from app import alerts
+
+    # senza canali la prova risponde 409
+    assert client.post("/alerts/test", headers=auth).status_code == 409
+    assert client.post("/alerts/test").status_code == 401
+
+    inviati: list[tuple[str, dict]] = []
+    conf = dataclasses.replace(alerts.settings, slack_webhook_url="https://hooks.slack.com/services/T/B/X")
+    monkeypatch.setattr(alerts, "settings", conf)
+    monkeypatch.setattr(alerts, "_post_json", lambda url, body: inviati.append((url, body)) or True)
+
+    r = client.post("/alerts/test", headers=auth)
+    assert r.json() == {"ok": True, "channels": ["slack"]}
+    url, body = inviati[0]
+    assert url.startswith("https://hooks.slack.com/") and "Polso" in body["text"]
+    assert body["blocks"][1]["elements"][0]["text"].startswith("<https://")
+
+    # un webhook che non risponde non fa fallire niente: send restituisce False
+    def rotto(url, body):
+        raise OSError("rete giù")
+
+    monkeypatch.setattr(alerts, "_post_json", rotto)
+    assert alerts.send("prova") is False
+    assert client.post("/alerts/test", headers=auth).status_code == 502

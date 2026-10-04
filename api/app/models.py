@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -32,6 +32,14 @@ class CheckIn(BaseModel):
     def con_fuso_orario(cls, value: datetime | None) -> datetime | None:
         if value is not None and value.tzinfo is None:
             raise ValueError("la data deve avere il fuso orario, es. 2026-10-04T12:00:00Z")
+        return value
+
+    @field_validator("checked_at")
+    @classmethod
+    def non_nel_futuro(cls, value: datetime | None) -> datetime | None:
+        # un controllo "dal futuro" resterebbe per sempre l'ultimo e bloccherebbe gli incidenti
+        if value is not None and value > datetime.now(UTC) + timedelta(minutes=5):
+            raise ValueError("checked_at è nel futuro")
         return value
 
 

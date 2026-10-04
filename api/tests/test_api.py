@@ -2,7 +2,8 @@
 
 from datetime import UTC, datetime, timedelta
 
-T0 = datetime(2026, 10, 4, 10, 0, tzinfo=UTC)
+# 10 ore fa, all'ora esatta: i controlli dei test non devono essere nel futuro
+T0 = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) - timedelta(hours=10)
 URL = "https://negozio.example.com"
 
 
@@ -63,8 +64,8 @@ def test_ciclo_completo_incidente(client, auth):
     assert len(incidenti) == 1
     inc = incidenti[0]
     assert inc["site_url"] == URL
-    assert inc["started_at"].startswith("2026-10-04T11:00")  # dal primo controllo giù
-    assert inc["resolved_at"].startswith("2026-10-04T14:00")
+    assert datetime.fromisoformat(inc["started_at"]) == T0 + timedelta(hours=1)  # dal primo controllo giù
+    assert datetime.fromisoformat(inc["resolved_at"]) == T0 + timedelta(hours=4)
     assert inc["duration_min"] == 180
 
     sito = client.get("/sites").json()[0]
@@ -112,3 +113,23 @@ def test_ssl_in_scadenza(client, auth):
 
 def test_sito_inesistente(client):
     assert client.get("/sites/999").status_code == 404
+
+
+def test_token_con_caratteri_strani_non_rompe_l_api(client):
+    r = client.post("/checks", json=[controllo(0, True)], headers={"Authorization": "Bearer città".encode()})
+    assert r.status_code == 401
+
+
+def test_data_nel_futuro_rifiutata(client, auth):
+    futuro = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+    assert client.post("/checks", json=[controllo(0, True, checked_at=futuro)], headers=auth).status_code == 422
+
+
+def test_nome_del_sito_aggiornato(client, auth):
+    client.post("/checks", json=[controllo(0, True)], headers=auth)
+    assert client.get("/sites").json()[0]["name"] == "negozio.example.com"
+    client.post("/checks", json=[controllo(1, True, name="Negozio Rossi")], headers=auth)
+    assert client.get("/sites").json()[0]["name"] == "Negozio Rossi"
+    # un controllo senza nome non cancella quello già dato
+    client.post("/checks", json=[controllo(2, True)], headers=auth)
+    assert client.get("/sites").json()[0]["name"] == "Negozio Rossi"

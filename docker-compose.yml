@@ -20,6 +20,7 @@ services:
 
   api:
     build: ./api
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://polso:${POSTGRES_PASSWORD}@db:5432/polso
       POLSO_INGEST_TOKEN: ${POLSO_INGEST_TOKEN:?imposta POLSO_INGEST_TOKEN nel file .env}
@@ -42,6 +43,7 @@ services:
 
   checker:
     build: ./checker
+    restart: unless-stopped
     environment:
       POLSO_API_URL: http://api:8000
       POLSO_INGEST_TOKEN: ${POLSO_INGEST_TOKEN}

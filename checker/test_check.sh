@@ -13,9 +13,11 @@ PORT=18765
 WORK="$(mktemp -d)"
 FAILED=0
 
-# shellcheck disable=SC2329  # chiamata dal trap qui sotto
+# shellcheck disable=SC2317,SC2329  # chiamata dal trap qui sotto
 cleanup() {
-    [[ -n "${SERVER_PID:-}" ]] && kill "$SERVER_PID" 2>/dev/null || true
+    if [[ -n "${SERVER_PID:-}" ]]; then
+        kill "$SERVER_PID" 2>/dev/null || true
+    fi
     rm -rf "$WORK"
 }
 trap cleanup EXIT   # pulisce sempre, anche se un test fallisce

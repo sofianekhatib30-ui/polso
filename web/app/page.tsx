@@ -18,7 +18,9 @@ export default async function Home() {
   }
 
   const online = sites.filter((s) => s.is_up && !s.open_incident).length;
-  const open = incidents.filter((i) => !i.resolved_at);
+  // gli incidenti aperti si contano dai siti, non dalla lista (che mostra solo gli ultimi 20)
+  const open = sites.filter((s) => s.open_incident);
+  const problems = sites.filter((s) => s.is_up === false || s.open_incident);
   const sslSoon = sites.filter((s) => s.ssl_days_left !== null && s.ssl_days_left <= 14);
 
   return (
@@ -26,9 +28,9 @@ export default async function Home() {
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Stato dei siti</h1>
         <p className="mt-1 text-ink-2">
-          {open.length === 0
+          {problems.length === 0
             ? `Tutto regolare: ${online} siti su ${sites.length} online.`
-            : `${open.length} ${open.length === 1 ? "sito ha" : "siti hanno"} un problema in corso.`}
+            : `${problems.length} ${problems.length === 1 ? "sito ha" : "siti hanno"} un problema in corso.`}
         </p>
       </section>
 

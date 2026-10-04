@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from typing import Annotated, Any
 from urllib.parse import urlparse
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 
 from . import alerts, db
 from .incidents import CheckState, decide
@@ -36,7 +36,7 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
         raise HTTPException(503, "Scrittura disattivata: POLSO_INGEST_TOKEN non impostato")
     expected = f"Bearer {settings.ingest_token}"
     # compare_digest confronta in tempo costante: non rivela quanti caratteri sono giusti
-    if not authorization or not secrets.compare_digest(authorization, expected):
+    if not authorization or not secrets.compare_digest(authorization.encode(), expected.encode()):
         raise HTTPException(401, "Token mancante o non valido")
 
 
@@ -45,10 +45,15 @@ def _default_name(url: str) -> str:
 
 
 @app.get("/health")
-def health() -> dict[str, Any]:
-    with db.connect() as conn:
-        row = db.fetch_one(conn, "health")
-    return {"ok": True, "database": row is not None}
+def health(response: Response) -> dict[str, Any]:
+    try:
+        with db.connect() as conn:
+            db.fetch_one(conn, "health")
+    except Exception:
+        log.exception("Database non raggiungibile")
+        response.status_code = 503
+        return {"ok": False, "database": False}
+    return {"ok": True, "database": True}
 
 
 @app.post("/checks", dependencies=[Depends(require_token)])
@@ -65,7 +70,11 @@ def ingest(checks: list[CheckIn]) -> IngestResult:
     # Tutto in una transazione: o si salva tutto, o niente.
     with db.connect() as conn:
         for check in checks:
-            site = db.fetch_one(conn, "upsert_site", {"url": check.url, "name": check.name or _default_name(check.url)})
+            site = db.fetch_one(
+                conn,
+                "upsert_site",
+                {"url": check.url, "name": check.name or _default_name(check.url), "given_name": check.name},
+            )
             assert site is not None
             site_id = site["id"]
             db.fetch_one(

@@ -102,13 +102,18 @@ check_http() {
 
 # Data di scadenza del certificato in formato ISO 8601 UTC, vuota se non leggibile.
 ssl_expiry() {
-    local url="$1" host end
+    local url="$1" hostport host port end
     [[ "$url" == https://* ]] || return 0
-    host="${url#https://}"; host="${host%%/*}"; host="${host%%:*}"
-    end="$(timeout 10 openssl s_client -servername "$host" -connect "$host:443" </dev/null 2>/dev/null \
+    hostport="${url#https://}"; hostport="${hostport%%/*}"
+    host="${hostport%%:*}"
+    port=443
+    [[ "$hostport" == *:* ]] && port="${hostport##*:}"
+    end="$(timeout 10 openssl s_client -servername "$host" -connect "$host:$port" </dev/null 2>/dev/null \
             | openssl x509 -noout -enddate 2>/dev/null)" || return 0
     end="${end#notAfter=}"
-    [[ -n "$end" ]] && date -u -d "$end" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || true
+    if [[ -n "$end" ]]; then
+        date -u -d "$end" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || true
+    fi
 }
 
 # Un controllo completo di un sito, in JSON.
@@ -179,7 +184,9 @@ main() {
     require_tools
     if (( EVERY > 0 )); then
         while true; do
-            run_once || log "giro fallito, riprovo al prossimo"
+            # le parentesi creano una sotto-shell: se run_once chiama "die" (exit),
+            # termina solo il giro, non il ciclo infinito
+            ( run_once ) || log "giro fallito, riprovo al prossimo"
             sleep "$EVERY"
         done
     else

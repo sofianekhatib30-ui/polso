@@ -5,7 +5,8 @@ RUN apk add --no-cache bash curl openssl jq coreutils ca-certificates
 
 WORKDIR /checker
 COPY check.sh .
-RUN chmod +x check.sh
+RUN chmod +x check.sh && adduser -D polso
+USER polso
 
 # controlla ogni ora; il file dei siti arriva da un volume (vedi docker-compose.yml)
 CMD ["./check.sh", "--sites", "/config/sites.txt", "--every", "3600"]

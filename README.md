@@ -74,12 +74,12 @@ La CI su GitHub esegue tutto a ogni push, più `shellcheck`, `ruff` e la build d
 - **Due controlli giù di fila per aprire un incidente.** Uno solo può essere un falso allarme di rete. La regola sta in una funzione pura (`api/app/incidents.py`), testata senza database.
 - **Bash per i controlli.** `curl` e `openssl` sono gli strumenti giusti per misurare un sito; lo script gira uguale su un server, in Docker e su GitHub Actions.
 - **Il controllo orario gira su GitHub Actions**, non su un server sempre acceso: costo zero.
-- **Sicurezza.** Scrittura protetta da token confrontato in tempo costante, nessun segreto nel codice (`.env.example`), container senza utente root, la lista dei siti reali non va su GitHub.
+- **Sicurezza.** Scrittura protetta da token confrontato in tempo costante, nessun segreto nel codice (`.env.example`), container senza utente root, lista dei siti fuori dal codice (file locale o secret di GitHub). Dashboard e log di GitHub Actions di un repository pubblico sono visibili a tutti: si monitorano solo siti propri o di clienti che sono d'accordo.
 - **Grafico senza librerie.** SVG disegnato a mano: tempi medi per ora, ore con disservizio segnate a parte, dettaglio al passaggio del mouse e tabella dei dati per l'accessibilità.
 
 ## Come ho usato l'AI
 
-Polso nasce da un'esigenza reale del mio studio: tenere d'occhio i siti dei clienti. L'ho sviluppato insieme a Claude, usato come assistente di programmazione: architettura, codice e test sono nati in coppia e ogni parte è coperta da test automatici.
+Polso nasce da un'esigenza reale del mio studio: tenere d'occhio i siti dei clienti. L'ho sviluppato insieme a Claude, usato come assistente di programmazione: architettura, codice e test sono nati in coppia. Checker, API e query SQL sono coperti da test automatici; la dashboard è controllata da TypeScript e lint.
 
 ## Documenti
 

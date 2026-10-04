@@ -36,6 +36,9 @@ def _database_available() -> bool:
 def clean_db():
     """Database vuoto con lo schema appena creato, per ogni test."""
     if not _database_available():
+        if os.environ.get("CI"):
+            # in CI un database mancante è un errore, non un test da saltare in silenzio
+            pytest.fail(f"PostgreSQL non raggiungibile su {TEST_DB_URL}")
         pytest.skip(f"PostgreSQL non raggiungibile su {TEST_DB_URL}")
     with psycopg.connect(TEST_DB_URL, autocommit=True) as conn:
         conn.execute("DROP TABLE IF EXISTS incidents, checks, sites CASCADE")

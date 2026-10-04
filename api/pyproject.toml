@@ -1,7 +1,14 @@
 [project]
 name = "polso-api"
 version = "1.0.0"
-requires-python = ">=3.12"
+requires-python = "~=3.12.0"
+# le stesse versioni di requirements.txt (usato da Docker e dalla CI)
+dependencies = [
+    "fastapi==0.118.0",
+    "psycopg[binary]==3.2.10",
+    "pydantic==2.11.9",
+    "uvicorn==0.37.0",
+]
 
 [tool.ruff]
 line-length = 120

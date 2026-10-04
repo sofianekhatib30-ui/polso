@@ -72,7 +72,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
 
       <section className="max-w-4xl">
         <div className="mb-8 hidden items-center gap-2 text-sm text-muted print:flex">
-          <Logo size={16} /> polso, monitor dei siti di K Digital Solution
+          <Logo size={16} animated={false} /> polso, monitor dei siti di K Digital Solution
         </div>
         <p className="text-ink-2">{clientName ?? "Tutti i siti monitorati"}</p>
         <h1 className="mt-2 font-display text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">

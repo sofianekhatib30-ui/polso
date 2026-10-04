@@ -15,7 +15,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </div>
           <main className="pt-6 pb-12 sm:pt-10">{children}</main>
           <footer className="flex items-center gap-2 pb-12 text-xs text-muted">
-            <Logo size={14} />
+            <Logo size={14} animated={false} />
             <span>
               Monitorato con{" "}
               <Link href="/" className="underline decoration-line underline-offset-2 hover:text-ink">

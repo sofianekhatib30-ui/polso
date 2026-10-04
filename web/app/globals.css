@@ -158,3 +158,26 @@ body {
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11pt; }
   section, tr, li { break-inside: avoid; }
 }
+
+/* Logo animato: il tracciato del battito si disegna, resta un attimo e si cancella.
+   Sotto resta una traccia tenue, così il logo è sempre leggibile. */
+.logo-base { opacity: 0.22; }
+.logo-traccia {
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  animation: polso-tracciato 2.8s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes polso-tracciato {
+  0%   { stroke-dashoffset: 100; }
+  45%  { stroke-dashoffset: 0; }
+  72%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -100; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-base { opacity: 1; }
+  .logo-traccia { display: none; }
+}
+@media print {
+  .logo-base { opacity: 1; }
+  .logo-traccia { display: none; }
+}

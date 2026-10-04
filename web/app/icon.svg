@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Favicon di Polso: lo stesso battito del logo, animato dove il browser lo permette
+       (Firefox anima le icone SVG; Chrome e Safari mostrano il primo fotogramma, qui la linea piena). -->
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#43BCCD"/>
+      <stop offset="0.35" stop-color="#662E9B"/>
+      <stop offset="0.62" stop-color="#EA3546"/>
+      <stop offset="0.8" stop-color="#F86624"/>
+      <stop offset="1" stop-color="#F9C80E"/>
+    </linearGradient>
+    <style>
+      .t { stroke-dasharray: 100 100; animation: a 2.8s cubic-bezier(.45,0,.25,1) infinite; }
+      .b { opacity: .25; }
+      @keyframes a { 0% { stroke-dashoffset: 0; } 20% { stroke-dashoffset: 0; } 50% { stroke-dashoffset: -100; } 51% { stroke-dashoffset: 100; } 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+      @media (prefers-reduced-motion: reduce) { .t { animation: none; } }
+    </style>
+  </defs>
+  <rect width="48" height="48" rx="11" fill="#19161f"/>
+  <g transform="translate(1 8.5) scale(0.96)" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="b" d="M2 17h9l3.5-9 5.5 18 5-14 3 5h18"/>
+    <path class="t" pathLength="100" d="M2 17h9l3.5-9 5.5 18 5-14 3 5h18"/>
+  </g>
+</svg>

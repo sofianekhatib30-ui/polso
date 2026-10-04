@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import { ApiDown, IncidentList, SectionHead, StatRow } from "@/components/Blocks";
+import { HeartbeatList } from "@/components/Checks";
 import { PulseLegend, PulseStrip } from "@/components/PulseStrip";
 import { SslDays, Status, StatusShape, statusInk, statusLabel, statusOf, type StatusKind } from "@/components/Status";
-import { api, ApiError, type DayPoint, type Incident, type SiteOverview } from "@/lib/api";
+import { api, ApiError, type DayPoint, type Heartbeat, type Incident, type SiteOverview } from "@/lib/api";
 import { host, ms, percent, timeAgo } from "@/lib/format";
+import { minutesSince } from "@/lib/site";
 
 // La pagina legge sempre dati freschi dall'API (niente pagina statica al momento della build).
 export const dynamic = "force-dynamic";
@@ -15,8 +17,14 @@ export default async function Home() {
   let sites: SiteOverview[];
   let incidents: Incident[];
   let daily: DayPoint[];
+  let heartbeats: Heartbeat[];
   try {
-    [sites, incidents, daily] = await Promise.all([api.sites(), api.incidents(), api.daily(DAYS)]);
+    [sites, incidents, daily, heartbeats] = await Promise.all([
+      api.sites(),
+      api.incidents(),
+      api.daily(DAYS),
+      api.heartbeats().catch(() => []), // le attività sono un extra: se mancano, la pagina va lo stesso
+    ]);
   } catch (e) {
     return <ApiDown message={e instanceof ApiError ? e.message : "Errore sconosciuto"} />;
   }
@@ -40,7 +48,10 @@ export default async function Home() {
   const online = byStatus.filter((x) => x.kind === "ok" || x.kind === "warn").length;
   // gli incidenti aperti si contano dai siti, non dalla lista (che mostra solo gli ultimi 20)
   const openIncidents = sites.filter((s) => s.open_incident).length;
-  const sslSoon = sites.filter((s) => s.ssl_days_left !== null && s.ssl_days_left <= 14).length;
+  // scadenze vicine: certificato entro 14 giorni o dominio entro 30
+  const expiring = sites.filter(
+    (s) => (s.ssl_days_left !== null && s.ssl_days_left <= 14) || (s.domain_days_left !== null && s.domain_days_left <= 30),
+  ).length;
   // uptime complessivo = controlli riusciti / controlli fatti, non media delle percentuali dei siti
   const checks = daily.reduce((a, d) => a + d.checks, 0);
   const up = daily.reduce((a, d) => a + d.up, 0);
@@ -61,7 +72,7 @@ export default async function Home() {
         items={[
           { label: "Siti online", value: `${online} su ${sites.length}` },
           { label: "Disservizi in corso", value: openIncidents },
-          { label: "Certificati in scadenza", value: sslSoon, hint: "entro 14 giorni" },
+          { label: "Scadenze vicine", value: expiring, hint: "certificati entro 14 g, domini entro 30" },
           {
             label: `Uptime ${DAYS} giorni`,
             value: percent(checks ? (100 * up) / checks : null),
@@ -139,10 +150,18 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="max-w-3xl">
-        <SectionHead title="Ultimi disservizi" />
-        <IncidentList incidents={incidents.slice(0, 8)} />
-      </section>
+      <div className={heartbeats.length ? "grid gap-12 lg:grid-cols-[3fr_2fr]" : "max-w-3xl"}>
+        <section>
+          <SectionHead title="Ultimi disservizi" />
+          <IncidentList incidents={incidents.slice(0, 8)} />
+        </section>
+        {heartbeats.length > 0 && (
+          <section>
+            <SectionHead title="Attività programmate" />
+            <HeartbeatList items={heartbeats} />
+          </section>
+        )}
+      </div>
     </div>
   );
 }
@@ -156,6 +175,8 @@ function Headline({
   total: number;
   lastCheck: string | null;
 }) {
+  // il checker passa ogni 15 minuti: oltre i 45 qualcosa si è fermato (GitHub, token, API)
+  const stale = lastCheck !== null && minutesSince(lastCheck) > 45;
   const names = (k: StatusKind) => items.filter((x) => x.kind === k).map((x) => x.site.name);
   const down = names("down");
   const partial = names("partial");
@@ -190,10 +211,17 @@ function Headline({
     <section className="max-w-4xl">
       <div className="flex items-center gap-3">
         <StatusShape kind={kind} size={18} />
-        <span className="text-sm text-ink-2">
-          Ultimo controllo {timeAgo(lastCheck)}. Si controlla una volta all&apos;ora.
-        </span>
+        <span className="text-sm text-ink-2">Ultimo controllo {timeAgo(lastCheck)}. Si controlla ogni 15 minuti.</span>
       </div>
+      {stale && (
+        <p className="mt-3 flex items-start gap-2 rounded-lg bg-surface-2 px-3 py-2 text-sm text-warn-ink">
+          <span className="pt-1">
+            <StatusShape kind="warn" />
+          </span>
+          Il checker non manda dati da più di 45 minuti: lo stato qui sotto potrebbe essere vecchio. Controlla il
+          workflow Monitor su GitHub.
+        </p>
+      )}
       <h1 className="mt-4 font-display text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl">
         {title}
       </h1>

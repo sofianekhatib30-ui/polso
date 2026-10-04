@@ -41,7 +41,7 @@ def clean_db():
             pytest.fail(f"PostgreSQL non raggiungibile su {TEST_DB_URL}")
         pytest.skip(f"PostgreSQL non raggiungibile su {TEST_DB_URL}")
     with psycopg.connect(TEST_DB_URL, autocommit=True) as conn:
-        conn.execute("DROP TABLE IF EXISTS incidents, checks, sites CASCADE")
+        conn.execute("DROP TABLE IF EXISTS heartbeat_pings, heartbeats, incidents, checks, sites CASCADE")
         conn.execute(SCHEMA.read_text(encoding="utf-8"))
     yield TEST_DB_URL
 

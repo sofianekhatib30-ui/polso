@@ -1,9 +1,12 @@
 -- Panoramica dei siti attivi: ultimo controllo, uptime, p95, giorni alla scadenza SSL.
--- Parametri: nessuno.
+-- Parametri: %(client)s (slug del cliente, NULL = tutti i siti)
 SELECT
     s.id,
     s.name,
     s.url,
+    s.client_name,
+    s.client_slug,
+    s.keyword,
     ultimo.checked_at                            AS last_checked_at,
     ultimo.is_up,
     ultimo.status_code,
@@ -14,6 +17,8 @@ SELECT
     round(st.p95_ms_24h)::int                    AS p95_ms_24h,
     -- giorni interi che mancano alla scadenza del certificato (negativo = già scaduto)
     floor(extract(epoch FROM ssl.ssl_expires_at - now()) / 86400)::int AS ssl_days_left,
+    floor(extract(epoch FROM s.domain_expires_at - now()) / 86400)::int AS domain_days_left,
+    ultimo.security_headers,
     EXISTS (
         SELECT 1 FROM incidents i
         WHERE i.site_id = s.id AND i.resolved_at IS NULL
@@ -21,7 +26,7 @@ SELECT
 FROM sites s
 -- LATERAL: per ogni sito prende solo il controllo più recente, usando l'indice (site_id, checked_at DESC)
 LEFT JOIN LATERAL (
-    SELECT c.checked_at, c.is_up, c.status_code, c.response_ms
+    SELECT c.checked_at, c.is_up, c.status_code, c.response_ms, c.security_headers
     FROM checks c
     WHERE c.site_id = s.id
     ORDER BY c.checked_at DESC
@@ -51,4 +56,5 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) AS ssl ON TRUE
 WHERE s.active
+  AND (%(client)s::text IS NULL OR s.client_slug = %(client)s::text)
 ORDER BY s.name;

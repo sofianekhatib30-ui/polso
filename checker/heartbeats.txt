@@ -1,0 +1,7 @@
+# Attività programmate che Polso sorveglia: se non danno segni di vita entro
+# "ogni" + "tolleranza", la dashboard le segna in ritardo e parte un avviso.
+# Per dare un segno di vita, alla fine dell'attività:
+#   curl -fsS -X POST -H "Authorization: Bearer $POLSO_INGEST_TOKEN" https://polso-api.vercel.app/ping/SLUG
+#
+# slug               ogni  tolleranza  nome
+controllo-domini     24h   3h          Controllo giornaliero dei domini

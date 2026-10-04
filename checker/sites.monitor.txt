@@ -1,13 +1,19 @@
-# Siti controllati ogni ora da GitHub Actions (workflow monitor.yml).
+# Siti controllati ogni 15 minuti da GitHub Actions (workflow monitor.yml).
 # Sono tutti siti pubblici del mio portfolio o di clienti che hanno dato l'ok.
 # Togliere una riga = il sito sparisce dalla dashboard (lo storico resta nel database).
+#
+# Formato:  URL  nome | cliente=Nome del cliente | cerca=testo che deve comparire nella pagina
+#   cliente  raggruppa i siti nella pagina di stato e nel report mensile di quel cliente
+#   cerca    se il testo manca, il sito conta come giù anche se risponde 200
+#            (scelto dal titolo della pagina: cambia raramente)
+#
 # Moonzah è in pausa: tornerà qui quando sarà riattivato.
-https://kdigitalsolution.it              K Digital Solution
-https://area.kdigitalsolution.it         Portale clienti K Digital Solution
-https://naivy.it                         Naivy
-https://naomifilippi.it                  Naomi Filippi
-https://project-q9m5e.vercel.app         General Fruit (anteprima)
-https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta)
-https://startappo.vercel.app             Startappo
-https://attestiamo.vercel.app            Attestiamo
-https://soglia-preview.vercel.app        Soglia
+https://kdigitalsolution.it              K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
+https://area.kdigitalsolution.it         Portale clienti K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
+https://naivy.it                         Naivy | cliente=K Digital Solution | cerca=Naivy
+https://startappo.vercel.app             Startappo | cliente=K Digital Solution | cerca=Startappo
+https://attestiamo.vercel.app            Attestiamo | cliente=K Digital Solution | cerca=Attestiamo
+https://soglia-preview.vercel.app        Soglia | cliente=K Digital Solution
+https://naomifilippi.it                  Naomi Filippi | cliente=Naomi Filippi | cerca=Naomi Filippi
+https://project-q9m5e.vercel.app         General Fruit (anteprima) | cliente=General Fruit | cerca=General Fruit
+https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta) | cliente=Fondazione L'Ancora | cerca=Ancora ETS

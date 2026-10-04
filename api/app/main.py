@@ -1,8 +1,9 @@
 """API di Polso.
 
-Scrittura (protetta da token):  POST /checks
-Lettura (pubblica):             GET /sites, /sites/{id}, /sites/{id}/series,
-                                /sites/{id}/transitions, /incidents, /ssl/expiring, /health
+Scrittura (protetta da token):  POST /checks, /domains, /heartbeats, /ping/{slug}
+Lettura (pubblica):             GET /sites, /sites/{id}, /sites/{id}/series, /sites/{id}/transitions,
+                                /incidents, /uptime/daily, /clients, /heartbeats, /report,
+                                /badge/{id}.svg, /ssl/expiring, /health
 """
 
 from __future__ import annotations
@@ -11,19 +12,22 @@ import logging
 import secrets
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from html import escape
 from typing import Annotated, Any
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import RedirectResponse
 
 from . import alerts, db
 from .incidents import CheckState, decide
-from .models import CheckIn, IngestResult
+from .models import CheckIn, DomainIn, HeartbeatIn, IngestResult, slugify
 from .settings import settings
 
 log = logging.getLogger("polso")
+ROME = ZoneInfo("Europe/Rome")
 
 
 @asynccontextmanager
@@ -45,15 +49,19 @@ app = FastAPI(
 )
 
 
-def require_token(authorization: Annotated[str | None, Header()] = None) -> None:
-    """Accetta solo richieste con l'header `Authorization: Bearer <token>` giusto."""
+def _check_token(given: str | None) -> None:
     if not settings.ingest_token:
         # senza token configurato la scrittura resta chiusa, mai aperta a tutti
         raise HTTPException(503, "Scrittura disattivata: POLSO_INGEST_TOKEN non impostato")
-    expected = f"Bearer {settings.ingest_token}"
     # compare_digest confronta in tempo costante: non rivela quanti caratteri sono giusti
-    if not authorization or not secrets.compare_digest(authorization.encode(), expected.encode()):
+    if not given or not secrets.compare_digest(given.encode(), settings.ingest_token.encode()):
         raise HTTPException(401, "Token mancante o non valido")
+
+
+def require_token(authorization: Annotated[str | None, Header()] = None) -> None:
+    """Accetta solo richieste con l'header `Authorization: Bearer <token>` giusto."""
+    given = authorization[7:] if authorization and authorization.startswith("Bearer ") else None
+    _check_token(given)
 
 
 def _default_name(url: str) -> str:
@@ -97,7 +105,14 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
             site = db.fetch_one(
                 conn,
                 "upsert_site",
-                {"url": check.url, "name": check.name or _default_name(check.url), "given_name": check.name},
+                {
+                    "url": check.url,
+                    "name": check.name or _default_name(check.url),
+                    "given_name": check.name,
+                    "client_name": check.client,
+                    "client_slug": slugify(check.client) if check.client else None,
+                    "keyword": check.keyword,
+                },
             )
             assert site is not None
             site_id = site["id"]
@@ -112,6 +127,7 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
                     "response_ms": check.response_ms,
                     "ssl_expires_at": check.ssl_expires_at,
                     "error": check.error,
+                    "security_headers": check.security_headers,
                 },
             )
 
@@ -140,6 +156,10 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
         if sync:
             deactivated = len(db.fetch_all(conn, "deactivate_missing", {"urls": [c.url for c in checks]}))
 
+        # il checker passa ogni 15 minuti: è il momento giusto per vedere se qualche attività è in ritardo
+        for hb in db.fetch_all(conn, "heartbeats_mark_late"):
+            to_alert.append(_late_text(hb))
+
     # Gli avvisi partono solo DOPO il commit: mai avvisare di qualcosa che non è stato salvato.
     for text in to_alert:
         alerts.send(text)
@@ -150,9 +170,10 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
 
 
 @app.get("/sites")
-def list_sites() -> list[dict[str, Any]]:
+def list_sites(client: str | None = None) -> list[dict[str, Any]]:
+    """Tutti i siti attivi, oppure solo quelli di un cliente (`?client=slug`)."""
     with db.connect() as conn:
-        return db.fetch_all(conn, "sites_overview")
+        return db.fetch_all(conn, "sites_overview", {"client": client})
 
 
 @app.get("/sites/{site_id}")
@@ -185,20 +206,24 @@ def site_transitions(site_id: int, limit: Annotated[int, Query(ge=1, le=200)] = 
 
 
 @app.get("/incidents")
-def list_incidents(site_id: int | None = None, limit: Annotated[int, Query(ge=1, le=200)] = 50) -> list[dict[str, Any]]:
+def list_incidents(
+    site_id: int | None = None, client: str | None = None, limit: Annotated[int, Query(ge=1, le=200)] = 50
+) -> list[dict[str, Any]]:
     with db.connect() as conn:
         if site_id is not None:
             _require_active(conn, site_id)
-        return db.fetch_all(conn, "incidents_list", {"site_id": site_id, "limit": limit})
+        return db.fetch_all(conn, "incidents_list", {"site_id": site_id, "client": client, "limit": limit})
 
 
 @app.get("/uptime/daily")
-def uptime_daily(days: Annotated[int, Query(ge=1, le=365)] = 90, site_id: int | None = None) -> list[dict[str, Any]]:
+def uptime_daily(
+    days: Annotated[int, Query(ge=1, le=365)] = 90, site_id: int | None = None, client: str | None = None
+) -> list[dict[str, Any]]:
     """Uptime per giorno (calendario di Roma). I giorni senza controlli hanno checks = 0 e uptime = null."""
     with db.connect() as conn:
         if site_id is not None:
             _require_active(conn, site_id)
-        rows = db.fetch_all(conn, "uptime_daily", {"days": days, "site_id": site_id})
+        rows = db.fetch_all(conn, "uptime_daily", {"days": days, "site_id": site_id, "client": client})
     return [{**r, "day": r["day"].isoformat()} for r in rows]
 
 
@@ -206,3 +231,183 @@ def uptime_daily(days: Annotated[int, Query(ge=1, le=365)] = 90, site_id: int | 
 def ssl_expiring(days: Annotated[int, Query(ge=1, le=365)] = 30) -> list[dict[str, Any]]:
     with db.connect() as conn:
         return db.fetch_all(conn, "ssl_expiring", {"days": days})
+
+
+# --- Clienti -----------------------------------------------------------------------------------
+
+
+@app.get("/clients")
+def list_clients() -> list[dict[str, Any]]:
+    """Clienti con almeno un sito attivo: servono per le pagine di stato e per il report."""
+    with db.connect() as conn:
+        return db.fetch_all(conn, "clients_list")
+
+
+@app.get("/clients/{slug}")
+def client_detail(slug: str) -> dict[str, Any]:
+    with db.connect() as conn:
+        row = db.fetch_one(conn, "client_exists", {"client": slug})
+    if row is None:
+        raise HTTPException(404, "Cliente non trovato")
+    return {"slug": slug, "name": row["name"]}
+
+
+# --- Domini ------------------------------------------------------------------------------------
+
+
+@app.post("/domains", dependencies=[Depends(require_token)])
+def save_domains(domains: list[DomainIn]) -> dict[str, int]:
+    """Il checker manda una volta al giorno la scadenza dei domini (letta con RDAP o whois)."""
+    if len(domains) > 200:
+        raise HTTPException(413, "Massimo 200 domini per richiesta")
+    with db.connect() as conn:
+        saved = sum(
+            1
+            for d in domains
+            if db.fetch_one(
+                conn,
+                "domain_update",
+                {"url": d.url, "domain": d.domain, "expires_at": d.expires_at, "registrar": d.registrar},
+            )
+        )
+    return {"saved": saved}
+
+
+# --- Attività programmate (heartbeat) ----------------------------------------------------------
+
+
+@app.post("/heartbeats", dependencies=[Depends(require_token)])
+def save_heartbeats(heartbeats: list[HeartbeatIn], sync: bool = False) -> dict[str, int]:
+    """Definisce le attività da sorvegliare. Con `?sync=true` quelle non in lista vengono disattivate."""
+    if len(heartbeats) > 100:
+        raise HTTPException(413, "Massimo 100 attività per richiesta")
+    with db.connect() as conn:
+        for hb in heartbeats:
+            db.fetch_one(conn, "heartbeat_upsert", hb.model_dump())
+        deactivated = 0
+        if sync:
+            deactivated = len(
+                db.fetch_all(conn, "heartbeats_deactivate_missing", {"slugs": [hb.slug for hb in heartbeats]})
+            )
+    return {"saved": len(heartbeats), "deactivated": deactivated}
+
+
+@app.get("/heartbeats")
+def list_heartbeats() -> list[dict[str, Any]]:
+    """Elenco con lo stato. Controlla anche i ritardi: così l'avviso parte pure se il checker
+    (che di solito se ne occupa) si è fermato e qualcuno apre la dashboard."""
+    with db.connect() as conn:
+        late = db.fetch_all(conn, "heartbeats_mark_late")
+        rows = db.fetch_all(conn, "heartbeats_list")
+    for hb in late:
+        alerts.send(_late_text(hb))
+    return rows
+
+
+def _late_text(hb: dict[str, Any]) -> str:
+    return f"⏰ {hb['name']} non dà segni di vita dal {hb['last_ping_at']:%d/%m alle %H:%M} UTC"
+
+
+@app.post("/ping/{slug}", dependencies=[Depends(require_token)])
+def ping(slug: str) -> dict[str, Any]:
+    """Segno di vita di un'attività: basta un `curl -X POST` con il token alla fine di uno script.
+    Il token va solo nell'header, mai nell'indirizzo: gli indirizzi finiscono nei log e nelle anteprime dei link."""
+    with db.connect() as conn:
+        row = db.fetch_one(conn, "heartbeat_ping", {"slug": slug})
+    if row is None:
+        raise HTTPException(404, "Attività non trovata: definiscila prima con POST /heartbeats")
+    if row["was_late"]:
+        alerts.send(f"✅ {row['name']} ha ripreso a dare segni di vita")
+    return {"ok": True, "slug": slug, "pinged_at": row["last_ping_at"]}
+
+
+# --- Report mensile ----------------------------------------------------------------------------
+
+
+def _month(value: str | None) -> date:
+    # il calendario è quello di Roma: il 1° del mese alle 00:30 è già il mese nuovo
+    today = datetime.now(ROME).date()
+    if value is None:
+        return today.replace(day=1)
+    try:
+        first = datetime.strptime(value, "%Y-%m").date()
+    except ValueError as err:
+        raise HTTPException(422, "Il mese va scritto come AAAA-MM, es. 2026-09") from err
+    if first > today or first.year < 2020:
+        raise HTTPException(422, "Mese fuori intervallo")
+    return first
+
+
+@app.get("/report")
+def report(month: str | None = None, client: str | None = None) -> dict[str, Any]:
+    """Report di un mese (`?month=2026-09`), per tutti i siti o per un cliente (`&client=slug`)."""
+    first = _month(month)
+    params = {"month": first, "client": client}
+    with db.connect() as conn:
+        if client is not None and db.fetch_one(conn, "client_exists", {"client": client}) is None:
+            raise HTTPException(404, "Cliente non trovato")
+        sites = db.fetch_all(conn, "report_sites", params)
+        incidents = db.fetch_all(conn, "report_incidents", params)
+    checks = sum(s["checks"] for s in sites)
+    up = sum(s["up"] for s in sites)
+    return {
+        "month": first.strftime("%Y-%m"),
+        "client": client,
+        "checks": checks,
+        "uptime": round(100 * up / checks, 3) if checks else None,
+        "incidents": len(incidents),
+        "downtime_min": sum(s["downtime_min"] for s in sites),
+        "sites": sites,
+        "incident_list": incidents,
+    }
+
+
+# --- Badge -------------------------------------------------------------------------------------
+
+
+def _badge_color(uptime: float | None) -> tuple[str, str]:
+    """Colore di fondo e del testo: i colori di stato di Polso, con il testo leggibile su ognuno."""
+    if uptime is None:
+        return "#8e879b", "#ffffff"
+    if uptime >= 99.9:
+        return "#43bccd", "#1e1a27"
+    if uptime >= 99:
+        return "#f9c80e", "#1e1a27"
+    if uptime >= 95:
+        return "#f86624", "#1e1a27"
+    return "#ea3546", "#ffffff"
+
+
+def _text_width(text: str) -> int:
+    return int(len(text) * 6.6) + 12
+
+
+@app.get("/badge/{site_id}.svg", include_in_schema=True)
+def badge(site_id: int, days: Annotated[int, Query(ge=1, le=90)] = 30) -> Response:
+    """Badge SVG con l'uptime, da mettere in un README: `![uptime](https://.../badge/1.svg)`."""
+    with db.connect() as conn:
+        row = db.fetch_one(conn, "badge", {"site_id": site_id, "days": days})
+    if row is None:
+        raise HTTPException(404, "Sito non trovato")
+    uptime = row["uptime"]
+    label = f"uptime {days}g"
+    value = "n/d" if uptime is None else f"{uptime:.2f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
+    bg, fg = _badge_color(uptime)
+    lw, vw = _text_width(label), _text_width(value)
+    w = lw + vw
+    svg = "\n".join(
+        [
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="20" role="img"'
+            f' aria-label="{escape(label)}: {escape(value)}">',
+            f"<title>{escape(row['name'])}: {escape(label)} {escape(value)}</title>",
+            f'<clipPath id="r"><rect width="{w}" height="20" rx="4"/></clipPath>',
+            f'<g clip-path="url(#r)"><rect width="{lw}" height="20" fill="#662e9b"/>'
+            f'<rect x="{lw}" width="{vw}" height="20" fill="{bg}"/></g>',
+            '<g font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">',
+            f'<text x="{lw / 2}" y="14" fill="#ffffff">{escape(label)}</text>',
+            f'<text x="{lw + vw / 2}" y="14" fill="{fg}">{escape(value)}</text>',
+            "</g></svg>",
+        ]
+    )
+    # i badge vengono mostrati da GitHub tramite il suo proxy: 5 minuti di cache bastano
+    return Response(svg, media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=300"})

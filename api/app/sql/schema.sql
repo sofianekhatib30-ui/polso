@@ -47,3 +47,66 @@ CREATE UNIQUE INDEX IF NOT EXISTS incidents_uno_aperto_per_sito
     ON incidents (site_id) WHERE resolved_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS incidents_sito_data_idx ON incidents (site_id, started_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- Aggiunte successive su un database già in uso.
+-- Non usiamo "ALTER TABLE ... ADD COLUMN IF NOT EXISTS": prende un lock esclusivo
+-- sulla tabella anche quando la colonna c'è già, e lo schema gira a ogni avvio dell'API.
+-- Qui si guarda prima il catalogo e si fa l'ALTER solo se la colonna manca davvero.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+    c record;
+BEGIN
+    FOR c IN
+        SELECT * FROM (VALUES
+            -- cliente a cui appartiene il sito (pagina di stato e report mensile)
+            ('sites',  'client_name',       'TEXT'),
+            ('sites',  'client_slug',       'TEXT'),
+            -- testo che deve comparire nella pagina perché il sito conti come "su"
+            ('sites',  'keyword',           'TEXT'),
+            -- scadenza del dominio, letta una volta al giorno (RDAP o whois)
+            ('sites',  'domain',            'TEXT'),
+            ('sites',  'domain_expires_at', 'TIMESTAMPTZ'),
+            ('sites',  'domain_registrar',  'TEXT'),
+            ('sites',  'domain_checked_at', 'TIMESTAMPTZ'),
+            -- header di sicurezza presenti nella risposta (es. {hsts,csp,nosniff})
+            ('checks', 'security_headers',  'TEXT[]')
+        ) AS v(tab, col, typ)
+    LOOP
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name = c.tab AND column_name = c.col
+        ) THEN
+            EXECUTE 'ALTER TABLE ' || quote_ident(c.tab) || ' ADD COLUMN ' || quote_ident(c.col) || ' ' || c.typ;
+        END IF;
+    END LOOP;
+END
+$$;
+
+CREATE INDEX IF NOT EXISTS sites_cliente_idx ON sites (client_slug) WHERE active;
+
+-- Attività programmate (backup, script notturni, il controllo dei domini...):
+-- devono "dare segni di vita" chiamando /ping/{slug} almeno ogni period_min minuti.
+CREATE TABLE IF NOT EXISTS heartbeats (
+    id            SERIAL PRIMARY KEY,
+    slug          TEXT        NOT NULL UNIQUE,
+    name          TEXT        NOT NULL,
+    period_min    INTEGER     NOT NULL,
+    grace_min     INTEGER     NOT NULL DEFAULT 0,
+    active        BOOLEAN     NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_ping_at  TIMESTAMPTZ,
+    -- TRUE dopo l'avviso di ritardo, così l'avviso parte una volta sola
+    late_alerted  BOOLEAN     NOT NULL DEFAULT FALSE,
+    CONSTRAINT heartbeats_slug_formato CHECK (slug ~ '^[a-z0-9][a-z0-9-]{0,59}$'),
+    CONSTRAINT heartbeats_periodo_valido CHECK (period_min BETWEEN 1 AND 60 * 24 * 31 AND grace_min >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS heartbeat_pings (
+    id            BIGSERIAL   PRIMARY KEY,
+    heartbeat_id  INTEGER     NOT NULL REFERENCES heartbeats(id) ON DELETE CASCADE,
+    pinged_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS heartbeat_pings_idx ON heartbeat_pings (heartbeat_id, pinged_at DESC);

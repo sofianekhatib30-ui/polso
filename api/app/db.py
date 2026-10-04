@@ -68,4 +68,7 @@ def fetch_one(conn: psycopg.Connection, name: str, params: dict[str, Any] | None
 def ensure_schema() -> None:
     """Esegue schema.sql (solo CREATE ... IF NOT EXISTS)."""
     with connect() as conn:
+        # se un'altra connessione tiene occupata una tabella, meglio rinunciare in fretta
+        # (l'API parte lo stesso) che restare in coda bloccando anche le letture
+        conn.execute("SET lock_timeout = '5s'")
         conn.execute(query("schema"))

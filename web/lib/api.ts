@@ -14,8 +14,15 @@ export type SiteOverview = {
   uptime_30d: number | null;
   p95_ms_24h: number | null;
   ssl_days_left: number | null;
+  domain_days_left: number | null;
   open_incident: boolean;
+  client_name: string | null;
+  client_slug: string | null;
+  keyword: string | null;
+  security_headers: SecurityHeader[] | null;
 };
+
+export type SecurityHeader = "hsts" | "csp" | "nosniff" | "frame" | "referrer" | "permissions";
 
 export type SiteDetail = {
   id: number;
@@ -28,6 +35,13 @@ export type SiteDetail = {
   p50_ms_7d: number | null;
   p95_ms_7d: number | null;
   last_checked_at: string | null;
+  client_name: string | null;
+  client_slug: string | null;
+  keyword: string | null;
+  domain: string | null;
+  domain_expires_at: string | null;
+  domain_registrar: string | null;
+  domain_checked_at: string | null;
 };
 
 export type SeriesPoint = {
@@ -65,6 +79,46 @@ export type DayPoint = {
   uptime: number | null; // null = nessun controllo quel giorno
 };
 
+export type Client = { slug: string; name: string; sites: number; uptime_30d: number | null };
+
+export type Heartbeat = {
+  slug: string;
+  name: string;
+  period_min: number;
+  grace_min: number;
+  last_ping_at: string | null;
+  next_due_at: string | null;
+  status: "ok" | "late" | "waiting";
+  pings_30d: number;
+};
+
+export type ReportSite = {
+  id: number;
+  name: string;
+  url: string;
+  client_name: string | null;
+  client_slug: string | null;
+  checks: number;
+  up: number;
+  uptime: number | null;
+  p50_ms: number | null;
+  p95_ms: number | null;
+  incidents: number;
+  downtime_min: number;
+  longest_min: number;
+};
+
+export type Report = {
+  month: string; // AAAA-MM
+  client: string | null;
+  checks: number;
+  uptime: number | null;
+  incidents: number;
+  downtime_min: number;
+  sites: ReportSite[];
+  incident_list: Incident[];
+};
+
 export class ApiError extends Error {}
 
 const BASE = (process.env.POLSO_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -82,12 +136,30 @@ async function get<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+// costruisce la query string saltando i valori vuoti
+function qs(params: Record<string, string | number | undefined | null>): string {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
+  const s = q.toString();
+  return s ? `?${s}` : "";
+}
+
+type Filter = { siteId?: number; client?: string };
+
 export const api = {
-  sites: () => get<SiteOverview[]>("/sites"),
+  sites: (client?: string) => get<SiteOverview[]>(`/sites${qs({ client })}`),
   site: (id: number) => get<SiteDetail>(`/sites/${id}`),
   series: (id: number, hours = 72) => get<SeriesPoint[]>(`/sites/${id}/series?hours=${hours}`),
   transitions: (id: number) => get<Transition[]>(`/sites/${id}/transitions?limit=10`),
-  daily: (days: number, siteId?: number) =>
-    get<DayPoint[]>(`/uptime/daily?days=${days}${siteId ? `&site_id=${siteId}` : ""}`),
-  incidents: (siteId?: number) => get<Incident[]>(`/incidents?limit=20${siteId ? `&site_id=${siteId}` : ""}`),
+  daily: (days: number, f: Filter = {}) =>
+    get<DayPoint[]>(`/uptime/daily${qs({ days, site_id: f.siteId, client: f.client })}`),
+  incidents: (f: Filter = {}, limit = 20) =>
+    get<Incident[]>(`/incidents${qs({ limit, site_id: f.siteId, client: f.client })}`),
+  clients: () => get<Client[]>("/clients"),
+  client: (slug: string) => get<{ slug: string; name: string }>(`/clients/${encodeURIComponent(slug)}`),
+  heartbeats: () => get<Heartbeat[]>("/heartbeats"),
+  report: (month?: string, client?: string) => get<Report>(`/report${qs({ month, client })}`),
 };
+
+// indirizzo pubblico dell'API, per i badge da copiare nei README
+export const API_PUBLIC_URL = BASE;

@@ -2,7 +2,7 @@
 -- I giorni sono quelli del calendario di Roma, non di Greenwich.
 -- Ogni giorno compare anche se non ha controlli (checks = 0): nella striscia
 -- diventa grigio "nessun dato", invece di essere contato come online.
--- Parametri: %(days)s, %(site_id)s (NULL = tutti i siti attivi)
+-- Parametri: %(days)s, %(site_id)s (NULL = tutti i siti attivi), %(client)s (slug, NULL = tutti)
 SELECT
     s.id                                                            AS site_id,
     g.giorno::date                                                  AS day,
@@ -23,5 +23,6 @@ LEFT JOIN checks c
       AND c.checked_at <  ((g.giorno + interval '1 day') AT TIME ZONE 'Europe/Rome')
 WHERE s.active
   AND (%(site_id)s::int IS NULL OR s.id = %(site_id)s::int)
+  AND (%(client)s::text IS NULL OR s.client_slug = %(client)s::text)
 GROUP BY s.id, g.giorno
 ORDER BY s.id, g.giorno;

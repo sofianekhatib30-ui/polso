@@ -66,3 +66,24 @@ export function dayLong(isoDay: string): string {
 export function dayShort(isoDay: string): string {
   return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(new Date(`${isoDay}T12:00:00`));
 }
+
+export function monthLabel(month: string): string {
+  // "2026-09" -> "settembre 2026"
+  return new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" }).format(new Date(`${month}-15T12:00:00`));
+}
+
+export function dateLong(iso: string | null): string {
+  if (!iso) return "—";
+  return new Intl.DateTimeFormat("it-IT", { timeZone: TZ, day: "numeric", month: "long", year: "numeric" }).format(
+    new Date(iso),
+  );
+}
+
+export function every(min: number): string {
+  // 1440 -> "ogni giorno", 60 -> "ogni ora", 90 -> "ogni 1 h 30 min"
+  if (min === 1440) return "ogni giorno";
+  if (min === 10080) return "ogni settimana";
+  if (min === 60) return "ogni ora";
+  if (min % 1440 === 0) return `ogni ${min / 1440} giorni`;
+  return `ogni ${duration(min)}`;
+}

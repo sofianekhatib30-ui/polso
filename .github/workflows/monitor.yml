@@ -1,23 +1,34 @@
-# Il "cron" di Polso in produzione: ogni ora GitHub esegue il checker
-# e manda i risultati all'API pubblicata. Nessun server da tenere acceso.
+# Il "cron" di Polso in produzione: GitHub esegue il checker e manda i risultati all'API pubblicata.
+# Nessun server da tenere acceso.
+#   ogni 15 minuti  controllo dei siti (stato, tempi, testo atteso, header, certificato)
+#   una volta al dì scadenza dei domini (RDAP o whois), poi segno di vita "controllo-domini"
 name: Monitor
 
 on:
   schedule:
-    - cron: "7 * * * *"   # al minuto 7 di ogni ora (UTC), per evitare l'ora piena affollata
-  workflow_dispatch:      # avvio a mano dalla scheda Actions
+    - cron: "7,22,37,52 * * * *"   # minuti "storti": all'ora piena GitHub è affollato e ritarda
+    - cron: "41 4 * * *"           # domini: 06:41 a Roma d'estate, 05:41 d'inverno
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "Cosa eseguire"
+        type: choice
+        options: [controlli, domini]
+        default: controlli
 
 permissions:
   contents: read
 
 concurrency:
-  group: monitor
+  group: monitor-${{ github.event.schedule == '41 4 * * *' && 'domini' || inputs.modo || 'controlli' }}
   cancel-in-progress: false
 
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DOMINI: ${{ github.event.schedule == '41 4 * * *' || inputs.modo == 'domini' }}
     steps:
       - uses: actions/checkout@v5
       - name: Lista dei siti
@@ -30,8 +41,16 @@ jobs:
           if [ -n "$POLSO_SITES" ]; then printf '%s\n' "$POLSO_SITES" > checker/sites.txt
           elif [ -f checker/sites.monitor.txt ]; then cp checker/sites.monitor.txt checker/sites.txt
           else cp checker/sites.example.txt checker/sites.txt; fi
+      - name: whois (ripiego per i domini senza RDAP)
+        if: env.DOMINI == 'true'
+        run: (sudo apt-get update -qq && sudo apt-get install -y -qq whois) >/dev/null || echo "whois non installato, si usa solo RDAP"
       - name: Controllo
         env:
           POLSO_API_URL: ${{ secrets.POLSO_API_URL }}
           POLSO_INGEST_TOKEN: ${{ secrets.POLSO_INGEST_TOKEN }}
-        run: ./checker/check.sh
+        run: |
+          if [ "$DOMINI" = "true" ]; then
+            ./checker/check.sh --domains --ping controllo-domini
+          else
+            ./checker/check.sh --heartbeats checker/heartbeats.txt
+          fi

@@ -52,7 +52,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex h-9 items-center gap-2 rounded-full border border-line px-3 text-sm text-ink-2 transition-colors hover:border-accent hover:text-ink"
+      className="inline-flex h-9 items-center gap-2 rounded-full border border-line px-2.5 text-sm sm:px-3 text-ink-2 transition-colors hover:border-accent hover:text-ink"
       aria-label={`Tema ${LABELS[theme].toLowerCase()}. Passa al tema ${LABELS[next].toLowerCase()}`}
       title={`Passa al tema ${LABELS[next].toLowerCase()}`}
     >

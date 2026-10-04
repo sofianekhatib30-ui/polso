@@ -1,5 +1,7 @@
-# Siti da controllare, uno per riga: URL e (facoltativo) un nome.
+# Siti da controllare, uno per riga: URL, poi (facoltativi) nome e opzioni separate da |
+#   cliente=Nome   raggruppa i siti per la pagina di stato e il report mensile del cliente
+#   cerca=testo    il sito conta come giù se nella pagina manca questo testo
 # Copia questo file in sites.txt e modificalo: sites.txt non va su GitHub.
-https://kdigitalsolution.it  K Digital Solution
-https://naivy.it             Naivy
-https://naomifilippi.it      Naomi Filippi
+https://kdigitalsolution.it  K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
+https://naivy.it             Naivy | cliente=K Digital Solution
+https://naomifilippi.it      Naomi Filippi | cliente=Naomi Filippi

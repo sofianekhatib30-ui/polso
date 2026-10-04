@@ -143,3 +143,18 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; }
 }
+
+/* Stampa (report mensile): sempre colori chiari, margini da foglio A4, niente pulsanti. */
+@media print {
+  @page { margin: 16mm 14mm; }
+  :root, :root[data-theme="dark"] {
+    color-scheme: light;
+    --bg: #ffffff; --surface: #ffffff; --surface-2: #f3f1f7; --line: #dcd8e4;
+    --ink: #1e1a27; --ink-2: #4a4556; --muted: #6e6879;
+    --accent: #662e9b; --accent-soft: #efe7f7;
+    --ok: #1fa0b2; --ok-ink: #0b6e7c; --warn: #e0a800; --warn-ink: #7a5600;
+    --partial: #f25a14; --partial-ink: #b23f0b; --down: #d42a3c; --down-ink: #b71c2e; --nodata: #d6d2de;
+  }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11pt; }
+  section, tr, li { break-inside: avoid; }
+}

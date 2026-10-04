@@ -160,7 +160,10 @@ icon_href() {
     [[ -n "$line" ]] || return 0
     href="$(sed -nE "s/.*[[:space:]]href=[\"']?([^\"' >]+).*/\1/Ip" <<<"$line" | head -n 1)"
     # \& perché da bash 5.2 una & nella sostituzione vuol dire "il testo trovato"
-    printf '%s' "${href//&amp;/\&}"
+    href="${href//&amp;/\&}"
+    # le icone incorporate (data:...) o lunghissime non servono: meglio nessuna
+    [[ "$href" == data:* || ${#href} -gt 1000 ]] && return 0
+    printf '%s' "$href"
 }
 
 # Header di sicurezza della risposta FINALE (dopo i redirect), come array JSON di nomi corti.

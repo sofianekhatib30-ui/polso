@@ -214,3 +214,17 @@ def test_icona_del_sito(client, auth):
     assert client.get("/sites").json()[0]["icon_url"] == "https://icona.example.com/favicon.ico"
     client.post("/checks", json=[controllo(url, minuti_fa=1, icon_href="javascript:alert(1)")], headers=auth)
     assert client.get("/sites").json()[0]["icon_url"] == "https://icona.example.com/favicon.ico"
+
+
+def test_icona_strana_non_blocca_i_controlli(client, auth):
+    lunga = "data:image/svg+xml;base64," + "A" * 5000
+    r = client.post(
+        "/checks",
+        json=[
+            controllo("https://a.example.com", icon_href=lunga, final_url="https://a.example.com/" + "x" * 2000),
+            controllo("https://b.example.com"),
+        ],
+        headers=auth,
+    )
+    assert r.status_code == 200 and r.json()["saved"] == 2
+    assert client.get("/sites").json()[0]["icon_url"] == "https://a.example.com/favicon.ico"

@@ -51,13 +51,22 @@ class CheckIn(BaseModel):
     keyword: str | None = Field(default=None, max_length=200)
     security_headers: list[SecurityHeader] | None = Field(default=None, max_length=10)
     # dove è finita la richiesta dopo i redirect, e l'icona dichiarata nella pagina (anche relativa)
-    final_url: str | None = Field(default=None, max_length=1000)
-    icon_href: str | None = Field(default=None, max_length=1000)
+    final_url: str | None = None
+    icon_href: str | None = None
 
     @field_validator("url")
     @classmethod
     def url_http(cls, value: str) -> str:
         return _url(value)
+
+    @field_validator("final_url", "icon_href")
+    @classmethod
+    def extra_facoltativi(cls, value: str | None) -> str | None:
+        # sono dettagli: un valore strano (un'icona data: lunghissima, un indirizzo enorme)
+        # si scarta, non deve far rifiutare il controllo di tutti i siti
+        if not value or len(value) > 1000 or value.lower().startswith(("data:", "javascript:")):
+            return None
+        return value
 
     @field_validator("client", "keyword")
     @classmethod

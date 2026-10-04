@@ -272,3 +272,17 @@ def test_tempi_da_francoforte_non_si_mescolano(client, auth):
     assert "timing_origin" not in r["last"]
     bad = {**eu, "origin": "FRA 1"}
     assert client.post("/checks", json=[controllo(url, timing=bad)], headers=auth).status_code == 422
+
+
+def test_p95_non_mescola_stati_uniti_e_francoforte(client, auth):
+    url = "https://misto.example.com"
+    usa = {"redirect_ms": 1500, "wait_ms": 600, "download_ms": 0, "size_bytes": 1000, "redirects": 1}
+    for minuti in (40, 35, 30):
+        client.post("/checks", json=[controllo(url, minuti_fa=minuti, response_ms=2100, timing=usa)], headers=auth)
+    eu = {**usa, "redirect_ms": 80, "wait_ms": 90, "origin": "fra1"}
+    for minuti in (10, 5):
+        client.post("/checks", json=[controllo(url, minuti_fa=minuti, response_ms=170, timing=eu)], headers=auth)
+    sito = client.get("/sites").json()[0]
+    assert (sito["p95_ms_24h"], sito["samples_24h"]) == (170, 2)
+    dettaglio = client.get("/sites/1").json()
+    assert dettaglio["p95_ms_7d"] == 170

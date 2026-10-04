@@ -1,4 +1,6 @@
 -- Panoramica dei siti attivi: ultimo controllo, uptime, p95, giorni alla scadenza SSL.
+-- Il p95 usa solo i tempi misurati dallo stesso posto dell'ultima misura (timing_origin):
+-- tempi presi dagli Stati Uniti e da Francoforte mescolati non descrivono nessuno dei due.
 -- Parametri: %(client)s (slug del cliente, NULL = tutti i siti)
 SELECT
     s.id,
@@ -34,6 +36,14 @@ LEFT JOIN LATERAL (
     ORDER BY c.checked_at DESC
     LIMIT 1
 ) AS ultimo ON TRUE
+-- da dove arriva l'ultima misura dei tempi (NULL = dal checker su GitHub, prima di Francoforte)
+LEFT JOIN LATERAL (
+    SELECT c.timing_origin
+    FROM checks c
+    WHERE c.site_id = s.id AND c.response_ms IS NOT NULL
+    ORDER BY c.checked_at DESC
+    LIMIT 1
+) AS orig ON TRUE
 LEFT JOIN LATERAL (
     SELECT
         -- FILTER conta solo le righe della finestra di tempo indicata
@@ -45,9 +55,11 @@ LEFT JOIN LATERAL (
               / nullif(count(*), 0), 2)                                                              AS uptime_30d,
         -- 95° percentile: 95 risposte su 100 è più veloce di questo valore
         percentile_cont(0.95) WITHIN GROUP (ORDER BY c.response_ms)
-            FILTER (WHERE c.checked_at > now() - interval '24 hours')                                AS p95_ms_24h,
+            FILTER (WHERE c.checked_at > now() - interval '24 hours'
+                      AND c.timing_origin IS NOT DISTINCT FROM orig.timing_origin)                  AS p95_ms_24h,
         -- quanti tempi misurati nelle 24 ore: con pochi controlli il p95 coincide quasi con il peggiore
-        count(c.response_ms) FILTER (WHERE c.checked_at > now() - interval '24 hours')            AS samples_24h
+        count(c.response_ms) FILTER (WHERE c.checked_at > now() - interval '24 hours'
+                                       AND c.timing_origin IS NOT DISTINCT FROM orig.timing_origin) AS samples_24h
     FROM checks c
     WHERE c.site_id = s.id
       AND c.checked_at > now() - interval '30 days'

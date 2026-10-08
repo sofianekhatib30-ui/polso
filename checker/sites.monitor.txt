@@ -17,4 +17,6 @@ https://attestiamo.vercel.app            Attestiamo | cliente=K Digital Solution
 https://soglia-preview.vercel.app        Soglia | cliente=K Digital Solution
 https://naomifilippi.it                  Naomi Filippi | cliente=Naomi Filippi | cerca=Naomi Filippi
 https://project-q9m5e.vercel.app         General Fruit (anteprima) | cliente=General Fruit | cerca=General Fruit | logo=https://polso-one.vercel.app/loghi/general-fruit.svg
+https://preventivolampo.vercel.app        PreventivoLampo | cliente=K Digital Solution | cerca=PreventivoLampo
+https://preventivolampo.vercel.app/accedi PreventivoLampo, area artigiani | cliente=K Digital Solution | cerca=Entra nei tuoi preventivi
 https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta) | cliente=Fondazione L'Ancora | cerca=Ancora ETS

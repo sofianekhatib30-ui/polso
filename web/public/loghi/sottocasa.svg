@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Marchio di Sottocasa (casa, borsa della spesa e germoglio), preso dal sito: il sito non ha una favicon -->
+  <rect width="48" height="48" rx="11" fill="#FFF2D9"/>
+  <g transform="translate(4 3.4) scale(0.835)">
+    <g fill="none" stroke="#324D1D" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 22 L24 7.5 L42 22"/>
+      <path d="M11 20.5 H37 L35 41.5 Q34.7 44 32.2 44 H15.8 Q13.3 44 13 41.5 Z"/>
+      <path d="M24 39 V29"/>
+    </g>
+    <g fill="#99C30C" stroke="#324D1D" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M24 31 C24.5 25.5 28.5 23 33 23.2 C32.6 28.4 28.8 31.4 24 31 Z"/>
+      <path d="M24 34 C23.4 29.6 20 27.4 15.6 27.6 C16 31.8 19.4 34.6 24 34 Z"/>
+    </g>
+  </g>
+</svg>

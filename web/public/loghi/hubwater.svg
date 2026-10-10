@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Marchio per HubWater: la H del logotipo, riempita d'acqua come nella proposta. Il sito non ha una favicon -->
+  <defs>
+    <clipPath id="h">
+      <path d="M12 11h8v10h8V11h8v26h-8V27h-8v10h-8z"/>
+    </clipPath>
+  </defs>
+  <rect width="48" height="48" rx="11" fill="#0A2540"/>
+  <path d="M12 11h8v10h8V11h8v26h-8V27h-8v10h-8z" fill="#EAF4F7"/>
+  <g clip-path="url(#h)">
+    <path d="M0 25 Q6 22 12 25 T24 25 T36 25 T48 25 V48 H0 Z" fill="#1D5FD1"/>
+  </g>
+</svg>

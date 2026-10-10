@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>I formaggi | Casa del Formaggio Monza</title>
+<meta name="description" content="Alpeggio, capra, pecora, bufala e formaggi francesi: le schede dei formaggi del banco della Casa del Formaggio di Monza.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#2B100A">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="I formaggi | Casa del Formaggio Monza">
+<meta property="og:description" content="Alpeggio, capra, pecora, bufala e formaggi francesi: le schede dei formaggi del banco della Casa del Formaggio di Monza.">
+<meta property="og:image" content="assets/bottega.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Caveat:wght@500;600&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+
+</head>
+<body>
+
+<header class="site-head" id="top">
+  <div class="wrap head-in">
+    <a class="brand" href="index.html" aria-label="Casa del Formaggio, vai alla home">
+      <img src="assets/logo.webp" alt="" width="48" height="48">
+      <span><strong>Casa del Formaggio</strong><small>Monza · dal 1902</small></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Principale">
+      <a href="storia.html">La storia</a>
+      <a href="formaggi.html" aria-current="page">I formaggi</a>
+      <a href="cesti.html">Cesti regalo</a>
+      <a href="contatti.html">Orari e contatti</a>
+    </nav>
+    <a class="btn head-cta" href="tel:+39039324437">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+      039 324437
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false" aria-label="Apri il menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+<!-- ============ HERO PAGINA ============ -->
+<section class="page-hero" aria-labelledby="h-page">
+  <div class="wrap page-hero-grid">
+    <div>
+      <nav class="crumbs" aria-label="Percorso"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>I formaggi</span></nav>
+      <p class="eyebrow">Il banco</p>
+      <h1 id="h-page"><span class="ln"><span>Il banco,</span></span><span class="ln"><span><em>forma per forma.</em></span></span></h1>
+      <p class="page-lead">Le schede dei formaggi che trovi da noi, scritte come i cartelli che mettiamo accanto a ogni forma: da dove arrivano, come nascono, con cosa abbinarli.</p>
+    </div>
+    <figure class="page-hero-media arch"><img src="assets/selezione.webp" width="960" height="1200" alt="Tranci di formaggi confezionati con i cartellini scritti a mano" fetchpriority="high"></figure>
+  </div>
+</section>
+
+<!-- ============ CATALOGO ============ -->
+<section class="section light" id="catalogo" aria-labelledby="h-cat">
+  <div class="wrap">
+    <div class="cat-head">
+      <div>
+        <p class="eyebrow">Le schede</p>
+        <h2 id="h-cat">Scegli <em>il tuo formaggio.</em></h2>
+      </div>
+      <p class="cat-note">L'assortimento cambia con le stagioni e con gli alpeggi: chiamaci per sapere cosa c'è oggi sul banco.</p>
+    </div>
+
+    <div class="filters" role="group" aria-label="Filtra i formaggi">
+      <div class="filter-row">
+        <span class="filter-label">Latte</span>
+        <button type="button" data-filter="latte" data-value="tutti" aria-pressed="true">Tutti</button>
+        <button type="button" data-filter="latte" data-value="vacca" aria-pressed="false">Vacca</button>
+        <button type="button" data-filter="latte" data-value="capra" aria-pressed="false">Capra</button>
+        <button type="button" data-filter="latte" data-value="pecora" aria-pressed="false">Pecora</button>
+        <button type="button" data-filter="latte" data-value="bufala" aria-pressed="false">Bufala</button>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Da dove</span>
+        <button type="button" data-filter="zona" data-value="tutte" aria-pressed="true">Ovunque</button>
+        <button type="button" data-filter="zona" data-value="lombardia" aria-pressed="false">Lombardia</button>
+        <button type="button" data-filter="zona" data-value="italia" aria-pressed="false">Resto d'Italia</button>
+        <button type="button" data-filter="zona" data-value="francia" aria-pressed="false">Francia</button>
+      </div>
+      <div class="filter-row filter-row--search">
+        <label class="filter-label" for="cerca">Cerca</label>
+        <input id="cerca" type="search" placeholder="Nome, zona, abbinamento…" autocomplete="off">
+        <span class="count" id="conteggio" aria-live="polite">26 formaggi</span>
+      </div>
+    </div>
+
+    <div class="cat-grid">
+    <article class="scheda-card rv" data-latte="vacca capra" data-zona="lombardia">
+      <figure class="sc-img"><img src="assets/storico-ribelle.webp" alt="Storico Ribelle" width="600" height="600" loading="lazy"></figure>
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Alta Val Gerola (SO)</span>
+        <h3>Storico Ribelle</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca e capra, crudo</dd></div><div><dt>Stagionatura</dt><dd>Lunga, anche di anni</dd></div></dl>
+        <p>Nasce in alpeggio con latte crudo vaccino e circa il 20% di latte di capra. Lo chiamano ribelle perché i suoi casari seguono il metodo antico, fuori dal disciplinare: ogni forma cambia con l'alpeggio e con l'annata.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Polenta taragna e sciatt</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="lombardia">
+      <figure class="sc-img"><img src="assets/bagoss-2020.webp" alt="Bagoss d'alpeggio" width="600" height="600" loading="lazy"></figure>
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Bagolino (BS)</span>
+        <h3>Bagoss d'alpeggio</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, crudo</dd></div><div><dt>Stagionatura</dt><dd>Lunga, da un anno in su</dd></div></dl>
+        <p>Il formaggio delle valli bresciane con un pizzico di zafferano nella pasta, che gli dà il colore dorato e un profumo inconfondibile. Lo teniamo anche stravecchio.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> A scaglie, con un rosso strutturato</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Brianza</span>
+        <h3>Piccantini brianzoli</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Circa 35 giorni</dd></div></dl>
+        <p>Sono i vecchi formaggini di Montevecchia: pasta morbida e compatta, colore giallo-rossastro. Un prodotto di punta delle nostre zone, dal sapore particolarissimo.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Con olio e pepe, o una salsina dolce</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="bufala" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Prealpi bergamasche</span>
+        <h3>Stracchino di bufala</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Bufala</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Latte di bufala italiano da animali al pascolo. Crosta bianca vellutata, pasta morbida e cremosa che si scioglie in bocca, sapore dolce e delicato.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Gelatine di vino o mieli di montagna</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="capra" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Alta Val Veddasca (VA)</span>
+        <h3>Ginestrina</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Capra, crudo biologico</dd></div><div><dt>Stagionatura</dt><dd>Almeno 8 mesi</dd></div></dl>
+        <p>Toma di montagna stagionata in foglie di ginestra a Pian del Lares, a mille metri sopra il lago Maggiore. Pasta dura, sapore deciso e intenso.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Melata di bosco, miele di rododendro, salse di fichi o pere</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="capra" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Alta Val Veddasca (VA)</span>
+        <h3>Formaggella del Luinese DOP</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Capra, crudo biologico</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Tometta a pasta molle fatta solo con latte di capra. Aroma di media intensità: piace anche a chi di solito non ama il caprino.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Antipasti, risotti, salse di mirtillo rosso o fragole</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="capra" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Grigne (LC)</span>
+        <h3>Toma di capra delle Grigne</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Capra</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Pura capra, pasta morbida e piumata: delicata ma saporita, adatta anche a chi non tollera il latte vaccino.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Nei risotti, o con miele di castagno e salsa di zucca e zenzero</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="capra" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Montagne lombarde</span>
+        <h3>Fagottini di capra aromatizzati</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Capra</dd></div><div><dt>Stagionatura</dt><dd>Freschi</dd></div></dl>
+        <p>Formaggini freschi e dolci di puro latte di capra, aromatizzati con la frutta. Una piccola squisitezza.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> A fine pasto o come aperitivo, con prosecco o vini bianchi</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="lombardia">
+      <div class="sc-body">
+        <span class="sc-zona">Lombardia · Valchiavenna (SO)</span>
+        <h3>Toma nostrana della Val Bregaglia</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, crudo intero</dd></div><div><dt>Stagionatura</dt><dd>60–90 giorni</dd></div></dl>
+        <p>Si fa tutto l'anno tranne d'estate, quando le mucche salgono in alpeggio. Pasta leggermente morbida e gusto non troppo intenso: piace a tutti.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Rossi non troppo strutturati, miele e frutta secca</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Alta Val Grana (CN)</span>
+        <h3>Castelmagno di malga DOP</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Da media a lunga</dd></div></dl>
+        <p>Nasce a circa 1100 metri ed è DOP dal 1996. Con la stagionatura diventa erborinato e passa da delicato a intenso e piccante. È il formaggio che abbiamo portato per primi in Lombardia.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Filo d'olio, marmellata di mirtilli o miele di castagno</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Val Formazza (VB)</span>
+        <h3>Bettelmatt stravecchio</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Lunga</dd></div></dl>
+        <p>Viene dagli alpeggi più alti della Val Formazza, al confine con la Svizzera, e si fa solo nei mesi d'alpeggio: per questo è così raro.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Rossi corposi, salse ai fichi o alle pere</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <figure class="sc-img"><img src="assets/toma-gressoney.webp" alt="Toma di Gressoney" width="600" height="600" loading="lazy"></figure>
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Valle del Lys (AO)</span>
+        <h3>Toma di Gressoney</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, crudo scremato</dd></div><div><dt>Stagionatura</dt><dd>2–4 mesi</dd></div></dl>
+        <p>Formaggio antico, fatto in piccole quantità con latte scremato per affioramento. Pasta compatta e gusto saporito: il classico formaggio da tavola.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Un buon rosso, salsine di arance piccanti o pomodori verdi</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Alta Val di Susa (TO)</span>
+        <h3>Plaisentif</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Media</dd></div></dl>
+        <p>Toma d'alpeggio di origine antica, fatta solo quando fioriscono le viole: per questo la chiamano il formaggio delle viole. Gusto persistente con un retrogusto di mandorla.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Una composta di cipolle di Tropea</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Alto Biellese (BI)</span>
+        <h3>Goliardo al Barbera</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Media</dd></div></dl>
+        <p>Toma dell'alto Biellese in cui il Barbera entra durante la lavorazione: la pasta prende un colore rosato e un aroma che ricorda il vino.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Un calice di Barbera</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca pecora" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Val Curone (AL)</span>
+        <h3>Montebore</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Misto, crudo</dd></div><div><dt>Stagionatura</dt><dd>Da fresco a stagionato</dd></div></dl>
+        <p>Si presenta a piani sovrapposti, come la torre del castello di Montebore. La tradizione racconta che fu servito alle nozze di Isabella d'Aragona e Gian Galeazzo Sforza.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Miele di castagno o cugnà</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Monte Grappa, Veneto</span>
+        <h3>Bastardo del Grappa</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Media</dd></div></dl>
+        <p>Formaggio veneto dei primi dell'Ottocento, a metà tra l'Asiago pressato e l'Asiago d'allevo: da qui il nome. Semigrasso, con spiccate note erbacee. Ottimo crudo, ma anche fritto o alla griglia.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Mele renette, mostarda di pere o cipolle rosse</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Veneto</span>
+        <h3>Blu al passito con mirtilli</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, pastorizzato</dd></div><div><dt>Stagionatura</dt><dd>Media</dd></div></dl>
+        <p>Detto anche Blu 61: erborinato morbido affinato con Raboso passito e ricoperto di mirtilli rossi. Dolce ed equilibrato, con note di vino mai invadenti.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Da solo, a fine pasto</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Carnia, Friuli</span>
+        <h3>Latteria stravecchio «Monte 27»</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Lunga</dd></div></dl>
+        <p>Friabilissimo, si scioglie in bocca con sapori vivaci che lasciano spazio agli aromi delle erbe di montagna.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> A scaglie, con un rosso o una salsa agrodolce</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Modenese</span>
+        <h3>Parmigiano Reggiano di collina DOP</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, crudo</dd></div><div><dt>Stagionatura</dt><dd>28–32 mesi</dd></div></dl>
+        <p>Il preferito di Massimo: le forme le sceglie ancora di persona, come gli ha insegnato il padre Rubens. Ottimo da tavola, il migliore da grattugia.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Da solo, a scaglie, o sui primi</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="pecora" data-zona="italia">
+      <figure class="sc-img"><img src="assets/fiore-di-gallura.webp" alt="Pecorino stravecchio Fiore di Gallura" width="600" height="600" loading="lazy"></figure>
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Gallura, Sardegna</span>
+        <h3>Pecorino stravecchio Fiore di Gallura</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Pecora</dd></div><div><dt>Stagionatura</dt><dd>Oltre 2 anni</dd></div></dl>
+        <p>Pasta dura e profumo intenso. Si affumica con gli arbusti della macchia mediterranea e la crosta, che si mangia, viene spennellata a mano con olio d'oliva.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Rossi, salsa di zucca e zenzero o miele</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="pecora" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Crotone, Calabria</span>
+        <h3>Pecorino crotonese</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Pecora, intero</dd></div><div><dt>Stagionatura</dt><dd>Fino a 2 anni</dd></div></dl>
+        <p>Crosta spessa con i segni del canestro, pasta dura e compatta. Da tavola o, stagionato, da grattugia.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Pomodori secchi, peperoncini sott'olio, cipolle di Tropea</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="pecora" data-zona="italia">
+      <div class="sc-body">
+        <span class="sc-zona">Italia · Basilicata e Sardegna</span>
+        <h3>Pecorino Moliterno al tartufo</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Pecora</dd></div><div><dt>Stagionatura</dt><dd>Media o lunga</dd></div></dl>
+        <p>Nasce a Moliterno, in Basilicata, e oggi si produce soprattutto in Sardegna. Pasta bianca con venature di tartufo nero, crosta con i segni del canestro di giunco.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Da tavola o grattugiato</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="francia">
+      <div class="sc-body">
+        <span class="sc-zona">Francia · Alvernia</span>
+        <h3>Rochebaron</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca, pastorizzato</dd></div><div><dt>Stagionatura</dt><dd>Circa 30 giorni</dd></div></dl>
+        <p>Erborinato a pasta molle cosparso di cenere di frassino: sapore di sottobosco e pasta cremosissima. Prende il nome da un castello in rovina vicino a Beauzac.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> A freddo, o fuso nella tartiflette</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="francia">
+      <div class="sc-body">
+        <span class="sc-zona">Francia · Savoia</span>
+        <h3>Reblochon</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Pasta morbida e fondente, crosta sottile: il formaggio delle Alpi francesi da cui nasce la tartiflette.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Patate al forno e un bianco di montagna</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="francia">
+      <div class="sc-body">
+        <span class="sc-zona">Francia · Normandia</span>
+        <h3>Pont-l'Évêque DOP</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Forma quadrata, crosta lavata e pasta morbida dal profumo deciso: uno dei formaggi più antichi della Normandia.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Pane rustico e sidro</p>
+      </div>
+    </article>
+    <article class="scheda-card rv" data-latte="vacca" data-zona="francia">
+      <div class="sc-body">
+        <span class="sc-zona">Francia · Bresse</span>
+        <h3>Bresse Bleu</h3>
+        <dl class="sc-meta"><div><dt>Latte</dt><dd>Vacca</dd></div><div><dt>Stagionatura</dt><dd>Breve</dd></div></dl>
+        <p>Erborinato dolce e cremoso, per chi si avvicina per la prima volta ai formaggi blu.</p>
+        <p class="sc-pair"><span class="hand">abbinalo:</span> Pere, noci e miele</p>
+      </div>
+    </article>
+    </div>
+    <p class="cat-empty" id="vuoto" hidden>Nessun formaggio corrisponde alla ricerca. Prova un altro filtro, oppure chiedi a noi: probabilmente lo abbiamo in bottega.</p>
+  </div>
+</section>
+
+<!-- ============ GALLERIA ============ -->
+<section class="section banco" aria-label="Foto dal banco">
+  <div class="wrap">
+    <div class="strip-head rv">
+      <h3>Sul nostro banco</h3>
+      <div class="strip-nav">
+        <button type="button" id="stripPrev" aria-label="Foto precedenti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <button type="button" id="stripNext" aria-label="Foto successive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="strip" id="strip" tabindex="0" aria-label="Foto dei formaggi in bottega">
+      <figure><img src="assets/cruschino.webp" alt="Forme di Cruschino all'acqua vite sul bancone di marmo" width="1080" height="1080" loading="lazy"><figcaption>Cruschino all'acqua vite</figcaption></figure>
+      <figure><img src="assets/affinati.webp" alt="Formaggi affinati nel fieno, in foglie di castagno e in barrique, legati con lo spago" width="1200" height="1200" loading="lazy"><figcaption>Affinati nel fieno, nelle foglie di castagno e in barrique</figcaption></figure>
+      <figure><img src="assets/scimudin.webp" alt="Due forme di Scimudin sul bancone" width="1080" height="1080" loading="lazy"><figcaption>Scimudin</figcaption></figure>
+      <figure><img src="assets/fiore-di-gallura.webp" alt="Forme di pecorino stravecchio Fiore di Gallura con il cartello della bottega" width="1200" height="1200" loading="lazy"><figcaption>Pecorino stravecchio Fiore di Gallura</figcaption></figure>
+      <figure><img src="assets/erborinato.webp" alt="Un erborinato tagliato accanto alla sua forma" width="1080" height="1080" loading="lazy"><figcaption>Erborinato al taglio</figcaption></figure>
+      <figure><img src="assets/selezione.webp" alt="Tranci di Bettelmatt, Storico Ribelle e altri formaggi confezionati con cartellini scritti a mano" width="960" height="1200" loading="lazy"><figcaption>Tagliati e confezionati al momento</figcaption></figure>
+      <figure><img src="assets/mostarde.webp" alt="Scaffale di mostarde e confetture artigianali" width="1200" height="1200" loading="lazy"><figcaption>Mostarde e confetture</figcaption></figure>
+      <figure><img src="assets/toma-gressoney.webp" alt="Forme di Toma di Gressoney con il cartello della bottega" width="1200" height="1200" loading="lazy"><figcaption>Toma di Gressoney</figcaption></figure>
+    </div>
+
+
+  </div>
+</section>
+
+<!-- ============ DISPENSA ============ -->
+<section class="section light" aria-labelledby="h-disp">
+  <div class="wrap dispensa">
+    <figure class="rv"><img src="assets/mostarde.webp" width="1200" height="1200" alt="Scaffale di mostarde e confetture artigianali" loading="lazy"></figure>
+    <div class="rv">
+      <p class="eyebrow">Non solo formaggi</p>
+      <h2 id="h-disp">La dispensa <em>della bottega.</em></h2>
+      <p>Quello che serve per completare il tagliere, o la cena di stasera.</p>
+      <ul class="disp-list">
+        <li><b>Mostarde artigianali lombarde</b>Di mele, pere, agrumi, albicocche, fichi, meloni e limoni.</li>
+        <li><b>Pasta fresca artigianale</b>Per i primi della domenica.</li>
+        <li><b>Confetture, mieli e salse</b>Da abbinare ai formaggi, come scriviamo sui nostri cartelli.</li>
+        <li><b>Oli, vini e specialità</b>Selezionati per accompagnare il banco.</li>
+      </ul>
+      <p class="disp-note">Chiedi anche dei formaggi senza lattosio.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="section cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-in rv">
+    <h2 id="h-cta">Vuoi che ti mettiamo <em>da parte una forma?</em></h2>
+    <p>Chiamaci prima di passare: la tagliamo e la prepariamo per te.</p>
+    <div class="cta-actions">
+      <a class="btn" href="tel:+39039324437">Chiama 039 324437</a>
+      <a class="btn btn--ghost" href="contatti.html">Orari e indirizzo</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="assets/logo.webp" alt="Logo Casa del Formaggio" width="72" height="72" loading="lazy">
+        <div><strong>Casa del Formaggio</strong><span>Negozio storico di Monza dal 1902</span></div>
+      </div>
+      <div>
+        <h4>Dove siamo</h4>
+        <p>Via Italia 19<br>20900 Monza (MB)<br>039 324437</p>
+      </div>
+      <div>
+        <h4>Orari</h4>
+        <p>Lun 9–13<br>Mar–Sab 9–13 · 15:30–19:30<br>Dom chiuso</p>
+      </div>
+      <div>
+        <h4>Seguici</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/casa.del.formaggio/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.facebook.com/p/Casa-del-Formaggio-Monza--100063979875556/" target="_blank" rel="noopener">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="yr">2026</span> Casa del Formaggio · Monza · P.IVA da inserire</span>
+      <span><a href="#">Privacy</a> · <a href="#">Cookie</a></span>
+    </div>
+  </div>
+</footer>
+
+<nav class="quickbar" aria-label="Azioni rapide">
+  <a class="btn" href="tel:+39039324437">Chiama</a>
+  <a class="btn btn--ghost" href="https://maps.app.goo.gl/Lcm67t3yJiyEtiWP9" target="_blank" rel="noopener">Indicazioni</a>
+</nav>
+
+<script src="assets/main.js"></script>
+</body>
+</html>

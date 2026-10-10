@@ -9,6 +9,7 @@
 #   logo     immagine da mostrare in dashboard, per i siti senza favicon (web/public/loghi/)
 #
 # Moonzah è in pausa: tornerà qui quando sarà riattivato.
+# Casa del Formaggio non è ancora online: entra qui appena ha il suo indirizzo.
 https://kdigitalsolution.it              K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
 https://area.kdigitalsolution.it         Portale clienti K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
 https://naivy.it                         Naivy | cliente=K Digital Solution | cerca=Naivy
@@ -20,3 +21,6 @@ https://project-q9m5e.vercel.app         General Fruit (anteprima) | cliente=Gen
 https://preventivolampo.vercel.app        PreventivoLampo | cliente=K Digital Solution | cerca=PreventivoLampo
 https://preventivolampo.vercel.app/accedi PreventivoLampo, area artigiani | cliente=K Digital Solution | cerca=Entra nei tuoi preventivi
 https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta) | cliente=Fondazione L'Ancora | cerca=Ancora ETS
+https://kdigitalsolution.it/smistatore/   Smistatore clienti | cliente=K Digital Solution | cerca=Smistatore clienti
+https://sottocasa-xi.vercel.app          Sottocasa | cliente=K Digital Solution | cerca=Sottocasa
+https://sorgente-hubwater.vercel.app     Sorgente per HubWater (proposta) | cliente=HubWater | cerca=HubWater

@@ -25,6 +25,7 @@ https://preventivi.kdigitalsolution.it    Preventivi | cliente=K Digital Solutio
 https://preventivi.kdigitalsolution.it/area Preventivi, area artigiani | cliente=K Digital Solution | cerca=Un solo account per tutti i tuoi strumenti
 https://account.kdigitalsolution.it/accedi Account K Digital Solution | cliente=K Digital Solution | cerca=Un solo account per tutti i tuoi strumenti
 https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta) | cliente=Fondazione L'Ancora | cerca=Ancora ETS | logo=https://polso-one.vercel.app/loghi/lancora.png
-https://kdigitalsolution.it/smistatore/   Smistatore clienti | cliente=K Digital Solution | cerca=Smistatore clienti
+# Dal 10/10/2026 Smistatore clienti si chiama Smistatore Mail e sta su smistatore.kdigitalsolution.it.
+https://smistatore.kdigitalsolution.it    Smistatore Mail | cliente=K Digital Solution | cerca=Smistatore Mail
 https://sottocasa-xi.vercel.app          Sottocasa | cliente=K Digital Solution | cerca=Sottocasa | logo=https://polso-one.vercel.app/loghi/sottocasa.svg
 https://sorgente-hubwater.vercel.app     Sorgente per HubWater (proposta) | cliente=HubWater | cerca=HubWater | logo=https://polso-one.vercel.app/loghi/hubwater.svg

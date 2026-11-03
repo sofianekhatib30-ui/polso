@@ -194,8 +194,8 @@ function Headline({
   total: number;
   lastCheck: string | null;
 }) {
-  // il checker passa ogni 15 minuti: oltre i 45 qualcosa si è fermato (GitHub, token, API)
-  const stale = lastCheck !== null && minutesSince(lastCheck) > 45;
+  // il checker passa ogni ora: oltre le 3 ore qualcosa si è fermato (GitHub, token, API)
+  const stale = lastCheck !== null && minutesSince(lastCheck) > 180;
   const names = (k: StatusKind) => items.filter((x) => x.kind === k).map((x) => x.site.name);
   const down = names("down");
   const partial = names("partial");
@@ -230,14 +230,14 @@ function Headline({
     <section className="max-w-4xl">
       <div className="flex items-center gap-3">
         <StatusShape kind={kind} size={18} />
-        <span className="text-sm text-ink-2">Ultimo controllo {timeAgo(lastCheck)}. Si controlla ogni 15 minuti.</span>
+        <span className="text-sm text-ink-2">Ultimo controllo {timeAgo(lastCheck)}. Si controlla ogni ora.</span>
       </div>
       {stale && (
         <p className="mt-3 flex items-start gap-2 rounded-lg bg-surface-2 px-3 py-2 text-sm text-warn-ink">
           <span className="pt-1">
             <StatusShape kind="warn" />
           </span>
-          Il checker non manda dati da più di 45 minuti: lo stato qui sotto potrebbe essere vecchio. Controlla il
+          Il checker non manda dati da più di 3 ore: lo stato qui sotto potrebbe essere vecchio. Controlla il
           workflow Monitor su GitHub.
         </p>
       )}

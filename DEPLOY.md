@@ -5,7 +5,7 @@
 | Database | Neon (PostgreSQL), dal Marketplace di Vercel | piano gratuito, regione Francoforte |
 | API (`api/`) | Vercel, runtime Python | progetto con cartella radice `api` |
 | Dashboard (`web/`) | Vercel, Next.js | progetto con cartella radice `web` |
-| Controlli ogni 15 minuti | GitHub Actions (`monitor.yml`), fatto partire da cron-job.org | nessun server da tenere acceso |
+| Controlli ogni ora | GitHub Actions (`monitor.yml`), fatto partire da cron-job.org | nessun server da tenere acceso |
 
 Polso funziona con qualunque PostgreSQL 15+: Neon, Supabase o un server proprio. Basta la stringa di connessione in `DATABASE_URL`.
 
@@ -47,7 +47,7 @@ Poi Actions → **Monitor** → *Run workflow* per il primo controllo.
 
 L'orario di GitHub (`schedule`) sui repository gratuiti è "quando può": il primo giorno è partito 2 volte su più di 20. Per questo il workflow lo fa partire [cron-job.org](https://cron-job.org) (gratis), con una chiamata all'API di GitHub:
 
-- **ogni 15 minuti**: controllo dei siti e invio dell'elenco delle attività programmate (`checker/heartbeats.txt`);
+- **ogni ora**: controllo dei siti e invio dell'elenco delle attività programmate (`checker/heartbeats.txt`);
 - **una volta al giorno** (06:41): scadenza dei domini, poi segno di vita dell'attività `controllo-domini`. Resta anche l'orario di GitHub alle 04:41 UTC, come riserva.
 
 Ogni job di cron-job.org:

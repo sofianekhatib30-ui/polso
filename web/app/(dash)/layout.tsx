@@ -89,7 +89,7 @@ export default async function DashboardLayout({
         {children}
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-12 text-xs leading-relaxed text-muted sm:px-6 print:hidden">
-        Ogni sito viene controllato ogni 15 minuti: le percentuali hanno questa
+        Ogni sito viene controllato ogni ora: le percentuali hanno questa
         risoluzione. Orari nel fuso di Roma.{" "}
         <a
           href="https://github.com/sofianekhatib30-ui/polso"

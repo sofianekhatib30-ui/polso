@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Polso · lo stato dei siti",
-  description: "Stato, uptime, tempi di risposta, certificati e domini dei siti di K Digital Solution, controllati ogni 15 minuti.",
+  description: "Stato, uptime, tempi di risposta, certificati e domini dei siti di K Digital Solution, controllati ogni ora.",
 };
 
 // Struttura comune a tutte le pagine. Intestazioni e piè di pagina stanno nei layout dei gruppi:

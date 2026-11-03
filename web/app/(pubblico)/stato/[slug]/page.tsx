@@ -80,7 +80,7 @@ export default async function ClientStatusPage({ params }: { params: Promise<{ s
           </h1>
         </div>
         <p className="mt-4 text-sm text-muted">
-          Aggiornato {timeAgo(lastCheck)}. Ogni sito viene controllato automaticamente ogni 15 minuti.
+          Aggiornato {timeAgo(lastCheck)}. Ogni sito viene controllato automaticamente ogni ora.
         </p>
       </section>
 

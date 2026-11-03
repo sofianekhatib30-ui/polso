@@ -1,4 +1,4 @@
-# Siti controllati ogni 15 minuti da GitHub Actions (workflow monitor.yml).
+# Siti controllati ogni ora da GitHub Actions (workflow monitor.yml).
 # Sono tutti siti pubblici del mio portfolio o di clienti che hanno dato l'ok.
 # Togliere una riga = il sito sparisce dalla dashboard (lo storico resta nel database).
 #

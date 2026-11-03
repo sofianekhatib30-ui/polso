@@ -88,7 +88,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
       <StatRow
         items={[
           { label: "Disponibilità", value: percent(report.uptime), hint: "controlli riusciti sul totale" },
-          { label: "Controlli fatti", value: report.checks.toLocaleString("it-IT"), hint: "uno ogni 15 minuti per sito" },
+          { label: "Controlli fatti", value: report.checks.toLocaleString("it-IT"), hint: "uno ogni ora per sito" },
           { label: "Interruzioni", value: report.incidents },
           { label: "Tempo fuori servizio", value: report.downtime_min ? duration(report.downtime_min) : "0 min" },
         ]}
@@ -173,7 +173,7 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
       </section>
 
       <p className="max-w-3xl border-t border-line pt-6 text-xs leading-relaxed text-muted">
-        Come si misura: ogni sito viene controllato ogni 15 minuti da un servizio esterno. Un controllo riesce se il sito
+        Come si misura: ogni sito viene controllato ogni ora da un servizio esterno. Un controllo riesce se il sito
         risponde entro 15 secondi con una pagina valida. Un&apos;interruzione inizia dopo due controlli falliti di fila e
         finisce al primo controllo riuscito; la durata è quindi precisa al quarto d&apos;ora. Orari nel fuso di Roma.
       </p>

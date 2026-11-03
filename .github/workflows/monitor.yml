@@ -1,6 +1,6 @@
 # Il "cron" di Polso in produzione: GitHub esegue il checker e manda i risultati all'API pubblicata.
 # Nessun server da tenere acceso.
-#   ogni 15 minuti  controllo dei siti (stato, tempi, testo atteso, header, certificato)
+#   ogni ora        controllo dei siti (stato, tempi, testo atteso, header, certificato)
 #   una volta al dì scadenza dei domini (RDAP o whois), poi segno di vita "controllo-domini"
 #   a mano          "prova-avvisi" manda un messaggio di prova su Slack/Telegram
 #

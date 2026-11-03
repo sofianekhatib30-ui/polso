@@ -143,7 +143,7 @@ async function get<T>(path: string): Promise<T> {
   let res: Response;
   try {
     // i dati si aggiornano al massimo una volta al minuto: la pagina resta veloce
-    res = await fetch(`${BASE}${path}`, { next: { revalidate: 60 } });
+    res = await fetch(`${BASE}${path}`, { next: { revalidate: 600 } });
   } catch {
     throw new ApiError(`API non raggiungibile (${BASE})`);
   }

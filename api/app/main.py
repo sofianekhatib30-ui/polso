@@ -175,7 +175,7 @@ def ingest(checks: list[CheckIn], sync: bool = False) -> IngestResult:
         if sync:
             deactivated = len(db.fetch_all(conn, "deactivate_missing", {"urls": [c.url for c in checks]}))
 
-        # il checker passa ogni 15 minuti: è il momento giusto per vedere se qualche attività è in ritardo
+        # il checker passa ogni ora: è il momento giusto per vedere se qualche attività è in ritardo
         for hb in db.fetch_all(conn, "heartbeats_mark_late"):
             to_alert.append(_late_text(hb))
         to_alert += _expiry_alerts(conn)

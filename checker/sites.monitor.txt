@@ -11,21 +11,16 @@
 # Casa del Formaggio, Notedipedagogia, Andrea Lamonica e il nuovo koraly.it esistono solo come anteprime:
 #   entrano qui appena hanno un indirizzo pubblico.
 # In pausa su Vercel (03/11/2026), quindi fuori dalla lista: Startappo, Soglia, OverShoulder, Polso.
-# KDS è una riga sola (sito, portale clienti e account insieme), più una per gli occhiali (KDS Go).
+# Di KDS solo due righe (04/11/2026): il sito kdigitalsolution.it e gli occhiali (KDS Go).
+#   I moduli (Attestiamo, Preventivi, Smistatore Mail, Agenzie e aziende) non hanno una riga loro.
 https://kdigitalsolution.it              K Digital Solution | cliente=K Digital Solution | cerca=K Digital Solution
 https://naivy.it                         Naivy | cliente=K Digital Solution | cerca=Naivy
-https://attestiamo.kdigitalsolution.it    Attestiamo | cliente=K Digital Solution | cerca=Attestiamo
 https://naomifilippi.it                  Naomi Filippi | cliente=Naomi Filippi | cerca=Naomi Filippi
 https://project-q9m5e.vercel.app         General Fruit (anteprima) | cliente=General Fruit | cerca=General Fruit | logo=https://polso-one.vercel.app/loghi/general-fruit.svg
-# Dall'11/10/2026 PreventivoLampo non esiste più: è Preventivi di K Digital Solution, e preventivolampo.vercel.app rimanda qui.
-https://preventivi.kdigitalsolution.it    Preventivi | cliente=K Digital Solution | cerca=Preventivi
 https://lancora-proposta.vercel.app      Fondazione L'Ancora (proposta) | cliente=Fondazione L'Ancora | cerca=Ancora ETS | logo=https://polso-one.vercel.app/loghi/lancora.png
-# Dal 10/10/2026 Smistatore clienti si chiama Smistatore Mail e sta su smistatore.kdigitalsolution.it.
-https://smistatore.kdigitalsolution.it    Smistatore Mail | cliente=K Digital Solution | cerca=Smistatore Mail
 https://sottocasa-xi.vercel.app          Sottocasa | cliente=K Digital Solution | cerca=Sottocasa | logo=https://polso-one.vercel.app/loghi/sottocasa.svg
 https://sorgente-hubwater.vercel.app     Sorgente per HubWater (proposta) | cliente=HubWater | cerca=HubWater | logo=https://polso-one.vercel.app/loghi/hubwater.svg
 https://go.kdigitalsolution.it           KDS Go (occhiali) | cliente=K Digital Solution | cerca=KDS Go
-https://lavoro.kdigitalsolution.it       Agenzie e aziende | cliente=K Digital Solution
 https://pharospeople.it                  Pharos People | cliente=Pharos People | cerca=Pharos People
-https://sousview.vercel.app              SousView | cliente=K Digital Solution | cerca=SousView
+https://sousview.vercel.app              SousView | cliente=K Digital Solution | cerca=SousView | logo=https://polso-one.vercel.app/loghi/sousview.svg
 https://moonzah.com                      Moonzah | cliente=K Digital Solution | cerca=Moonzah

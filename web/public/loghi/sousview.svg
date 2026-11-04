@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Marchio di SousView (pentola con il vapore), arancio paprika su nero come nell'app -->
+  <rect width="48" height="48" rx="11" fill="#000"/>
+  <g transform="translate(4.8 5.4) scale(0.6)">
+    <path d="M24 10c-2 3 2 5 0 8M32 8c-2 3 2 5 0 8M40 10c-2 3 2 5 0 8" fill="none" stroke="#FF7A1A" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M10 26h44v4H10zM14 32h36v12a10 10 0 0 1-10 10H24a10 10 0 0 1-10-10zM6 34h8v4H6zM50 34h8v4h-8z" fill="#FF7A1A"/>
+  </g>
+</svg>

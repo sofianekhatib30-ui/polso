@@ -10,6 +10,7 @@
 #
 # Casa del Formaggio, Notedipedagogia, Andrea Lamonica e il nuovo koraly.it esistono solo come anteprime:
 #   entrano qui appena hanno un indirizzo pubblico.
+# Ubica (gestionale magazzino) entra appena ha il primo deploy su ubica.vercel.app.
 # Fuori dalla lista: Startappo, Soglia, OverShoulder (in pausa su Vercel dal 03/11/2026), Moonzah e Sottocasa (tolti il 05/11/2026).
 # Di KDS solo due righe (04/11/2026): il sito kdigitalsolution.it e gli occhiali (KDS Go).
 #   I moduli (Attestiamo, Preventivi, Smistatore Mail, Agenzie e aziende) non hanno una riga loro.
@@ -22,3 +23,8 @@ https://sorgente-hubwater.vercel.app     Sorgente per HubWater (proposta) | clie
 https://go.kdigitalsolution.it           KDS Go (occhiali) | cliente=K Digital Solution | cerca=KDS Go
 https://pharospeople.it                  Pharos People | cliente=Pharos People | cerca=Pharos People
 https://sousview.vercel.app              SousView | cliente=K Digital Solution | cerca=SousView | logo=https://polso-one.vercel.app/loghi/sousview.svg
+https://fixview.vercel.app               FixView (occhiali, fai-da-te) | cliente=K Digital Solution | cerca=FixView | logo=https://polso-one.vercel.app/loghi/fixview.svg
+https://liftview.vercel.app              LiftView (occhiali, palestra) | cliente=K Digital Solution | cerca=LiftView | logo=https://polso-one.vercel.app/loghi/liftview.svg
+https://lookview.vercel.app              LookView (occhiali, prezzi nel mondo) | cliente=K Digital Solution | cerca=LookView | logo=https://polso-one.vercel.app/loghi/lookview.svg
+https://cartview.vercel.app              CartView (occhiali, spese di casa) | cliente=K Digital Solution | cerca=CartView | logo=https://polso-one.vercel.app/loghi/cartview.svg
+https://guideview.vercel.app             GuideView (occhiali, turismo) | cliente=K Digital Solution | cerca=GuideView | logo=https://polso-one.vercel.app/loghi/guideview.svg
